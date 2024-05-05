@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymmetricDifferenceFinder", "SymmetricDifferenceFinder\SymmetricDifferenceFinder.csproj", "{83148C19-EB52-429F-BEEB-3C60B005722E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricDifferenceFinder", "SymmetricDifferenceFinder\SymmetricDifferenceFinder.csproj", "{83148C19-EB52-429F-BEEB-3C60B005722E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricDifferenceFinderTests", "SymmetricDifferenceFinderTests\SymmetricDifferenceFinderTests.csproj", "{9CE81861-409E-4C77-A057-DEBF4594D87A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricDifferenceFinderBenchmarks", "SymmetricDifferenceBenchmarks\SymmetricDifferenceFinderBenchmarks.csproj", "{62F1F8BE-DCEB-4940-8FD4-EB5EBEAAF9F6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LittleSharp", "..\LittleSharp\LittleSharp\LittleSharp.csproj", "{526D236F-0D8B-40D9-8595-E74222ECD68B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashHash", "..\FlashHash\FlashHash\FlashHash.csproj", "{58E0877E-CFE8-42A8-B55E-F6441D230930}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +23,22 @@ Global
 		{83148C19-EB52-429F-BEEB-3C60B005722E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83148C19-EB52-429F-BEEB-3C60B005722E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83148C19-EB52-429F-BEEB-3C60B005722E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE81861-409E-4C77-A057-DEBF4594D87A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE81861-409E-4C77-A057-DEBF4594D87A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE81861-409E-4C77-A057-DEBF4594D87A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE81861-409E-4C77-A057-DEBF4594D87A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62F1F8BE-DCEB-4940-8FD4-EB5EBEAAF9F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62F1F8BE-DCEB-4940-8FD4-EB5EBEAAF9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62F1F8BE-DCEB-4940-8FD4-EB5EBEAAF9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62F1F8BE-DCEB-4940-8FD4-EB5EBEAAF9F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{526D236F-0D8B-40D9-8595-E74222ECD68B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{526D236F-0D8B-40D9-8595-E74222ECD68B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{526D236F-0D8B-40D9-8595-E74222ECD68B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{526D236F-0D8B-40D9-8595-E74222ECD68B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58E0877E-CFE8-42A8-B55E-F6441D230930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58E0877E-CFE8-42A8-B55E-F6441D230930}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58E0877E-CFE8-42A8-B55E-F6441D230930}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58E0877E-CFE8-42A8-B55E-F6441D230930}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
