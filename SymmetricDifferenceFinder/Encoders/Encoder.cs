@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SymmetricDifferenceBenchmarks.Encoders
+namespace SymmetricDifferenceFinder.Encoders
 {
 
 	public record EncoderConfiguration<TTable>(IEnumerable<IHashingFunctionScheme> HashingFunctionSchemes, int TableSize)
@@ -68,16 +68,24 @@ namespace SymmetricDifferenceBenchmarks.Encoders
 
 		public void Encode(ulong[] buffer, int nItemsInBuffer)
 		{
+			if (_hashBuffer.Length < nItemsInBuffer)
+				_hashBuffer = new Hash[nItemsInBuffer];
+
 			foreach (var hashToBufferFunction in _hashToBufferFunctions)
 			{
 				hashToBufferFunction(buffer, _hashBuffer, 0, nItemsInBuffer);
 
 				for (int i = 0; i < nItemsInBuffer; i++)
 				{
-					_table.Add((uint)i, _hashBuffer[i]);
+					_table.Add((uint)_hashBuffer[i], buffer[i]);
 				}
 			}
 
+		}
+
+		public TTable GetTable()
+		{
+			return _table;
 		}
 	}
 }
