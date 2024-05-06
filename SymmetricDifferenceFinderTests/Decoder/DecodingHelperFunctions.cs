@@ -57,7 +57,7 @@ namespace SymmetricDifferenceFinderTests.Decoder
 		{
 			Expression<Func<ulong, ulong>> f = x => x;
 			var looksPure = DecodingHelperFunctions.GetLooksPure<MockTable>(new List<Expression<Func<ulong, ulong>>> { f });
-			var addIfLooksPure = DecodingHelperFunctions.AddIfLooksPure<HashSet<ulong>, MockTable>(looksPure).Compile();
+			var addIfLooksPure = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, MockTable>(looksPure).Compile();
 
 			var table = new ulong[10];
 

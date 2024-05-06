@@ -10,9 +10,9 @@ using HashingFunctions = System.Collections.Generic.List<System.Linq.Expressions
 
 namespace SymmetricDifferenceFinder.Decoders
 {
-	public class HPWMainDecodingLoop
+	public static class HPWMainDecodingLoop
 	{
-		public static Expression<Action<ulong[], int, TSet, TSet, TSketch>> OneDecodingStep<TSet, TSketch>(
+		public static Expression<Action<ulong[], int, TSet, HashSet<ulong>, TSketch>> GetOneDecodingStep<TSet, TSketch>(
 		HashingFunctions hashingFunctions,
 		Expression<Action<ulong, ulong, TSketch>> Toggle,
 		Expression<Func<ulong, TSketch, bool>> LooksPure,
@@ -20,7 +20,7 @@ namespace SymmetricDifferenceFinder.Decoders
 		)
 			where TSketch : ISketch
 		{
-			var f = CompiledActions.Create<ulong[], int, TSet, TSet, TSketch>(
+			var f = CompiledActions.Create<ulong[], int, TSet, HashSet<ulong>, TSketch>(
 				out var pures_, out var numberOfItems_, out var nextStepPures_, out var answerKeys_, out var table_
 				);
 

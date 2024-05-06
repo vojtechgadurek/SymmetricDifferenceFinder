@@ -40,7 +40,7 @@ namespace SymmetricDifferenceFinder.Decoders
 			return f.Construct();
 		}
 
-		public static Expression<Action<ulong, TSet, TSketch>> AddIfLooksPure<TSet, TSketch>(Expression<Func<ulong, TSketch, bool>> looksPure)
+		public static Expression<Action<ulong, TSet, TSketch>> GetAddIfLooksPure<TSet, TSketch>(Expression<Func<ulong, TSketch, bool>> looksPure)
 
 			where TSketch : ISketch
 		{
@@ -52,7 +52,7 @@ namespace SymmetricDifferenceFinder.Decoders
 			return a.Construct();
 		}
 
-		public static Expression<Action<TSketch, int, TSet>> Initialize<TSketch, TSet>(
+		public static Expression<Action<TSketch, int, TSet>> GetInitialize<TSketch, TSet>(
 			Expression<Action<ulong, TSet, TSketch>> AddIfLooksPure
 		)
 			where TSketch : ISketch
