@@ -25,7 +25,7 @@ namespace SymmetricDifferenceFinder.Tables
 		}
 
 
-		public void Add(uint key, ulong value)
+		public void Add(Hash key, Key value)
 		{
 			_table[key] ^= value;
 		}

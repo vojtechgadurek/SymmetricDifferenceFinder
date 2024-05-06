@@ -20,7 +20,7 @@ namespace SymmetricDifferenceFinderTests.Utils
 			_table = new ulong[size];
 		}
 
-		public void Add(uint key, ulong value)
+		public void Add(ulong key, ulong value)
 		{
 			_table[key] = value;
 		}

@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SymmetricDifferenceFinder.Tables
+namespace SymmetricDifferenceFinder.Decoders
 {
-	public interface ITable
+	public class HyperGraphDecoder
 	{
-		void Add(Hash key, Key value);
-		int Size();
 	}
 }

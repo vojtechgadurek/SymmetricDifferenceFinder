@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SymmetricDifferenceFinder.Tables
+namespace SymmetricDifferenceFinderTests.Decoder
 {
-	public interface ITable
+	public class HPWSpecialFunctionsTests
 	{
-		void Add(Hash key, Key value);
-		int Size();
+
+
 	}
 }

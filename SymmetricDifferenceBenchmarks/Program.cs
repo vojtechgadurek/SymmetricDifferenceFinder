@@ -1,13 +1,15 @@
 ﻿namespace SymmetricDifferenceBenchmarks
 {
 	using BenchmarkDotNet.Running;
+	using SymmetricDifferenceFinderBenchmarks.Experiments;
 	using static SymmetricDifferenceFinderBenchmarks.EncoderBenchmarks;
 
 	public class Program
 	{
 		public static void Main(string[] args)
 		{
-			BenchmarkRunner.Run<BasicEncodingBenchmark>();
+			//BenchmarkRunner.Run<BasicEncodingBenchmark>();
+			BenchmarkRunner.Run<DeVirtualizationBenchmarks>();
 		}
 	}
 }

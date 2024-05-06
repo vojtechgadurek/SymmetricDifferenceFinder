@@ -26,7 +26,7 @@ namespace SymmetricDifferenceFinder.Tables
 			public ulong hashSum;
 			public ulong keySum;
 		}
-		public void Add(uint key, ulong value)
+		public void Add(Hash key, Key value)
 		{
 			_table[key].count++;
 			_table[key].hashSum += key;
