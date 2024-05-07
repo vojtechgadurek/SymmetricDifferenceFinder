@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinderTests.Decoder
 {
-	internal class HyperGraphSpecialFunctionsTest
+	public class HyperGraphSpecialFunctionsTest
 	{
+
 	}
 }

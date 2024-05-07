@@ -12,8 +12,8 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		public void Add(Hash key, Key value);
 		public void Remove(Hash key, Key value);
 
-		public void GetCount(Hash key);
+		public int GetCount(Hash key);
 
-		public void GetHashCheck(Hash key);
+		public ulong GetHashCheck(Hash key);
 	}
 }

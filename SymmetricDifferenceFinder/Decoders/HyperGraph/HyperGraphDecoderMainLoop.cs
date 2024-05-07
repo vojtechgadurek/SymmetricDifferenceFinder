@@ -47,7 +47,6 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 				.IfThen(!(count_.V == 1 | count_.V == -1), new Scope().GoToEnd(f.S))
 				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
 				.DeclareVariable(out var hashCheck_, sketch_.V.Call<ulong>("GetHashCheck", key_.V))
-				.IfThen(count_.V == -1, new Scope().Assign(hashCheck_, -hashCheck_.V))
 				.Assign(f.Output,
 					hashingFunctions
 						.Select(h => f.S.Function(h, value_.V))
