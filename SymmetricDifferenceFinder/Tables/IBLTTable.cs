@@ -96,5 +96,10 @@ namespace SymmetricDifferenceFinder.Tables
 		{
 			return _table[key];
 		}
+
+		public bool IsEmpty()
+		{
+			return _table.All(x => 0 == x.Count && 0 == x.HashSum && 0 == x.KeySum);
+		}
 	}
 }
