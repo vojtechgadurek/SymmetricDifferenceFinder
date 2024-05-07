@@ -83,12 +83,18 @@ namespace SymmetricDifferenceFinderTests.Decoder
 			IBLTTable t = new IBLTTable((int)size);
 
 			List<ulong> p = new List<ulong>();
+			List<ulong> a = new List<ulong>();
 
 			t.Add(0, 1);
 			t.Add(1, 1);
 			FieldContains(1, 1, t, 0, 1);
 
-			f(1, t, p);
+			f(1, t, p, a);
+
+			Assert.Contains(1UL, a);
+
+			Assert.Single(a);
+
 
 			FieldContains(0, 0, t, 0, 1);
 
@@ -97,7 +103,11 @@ namespace SymmetricDifferenceFinderTests.Decoder
 
 			FieldContains(-1, 3, t, 0, 3);
 
-			f(3, t, p);
+			f(3, t, p, a);
+
+			Assert.Contains(3UL, a);
+
+			Assert.Equal(2, a.Count);
 
 			FieldContains(0, 0, t, 0, 3);
 

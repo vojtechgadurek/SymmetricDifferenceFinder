@@ -11,13 +11,13 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 {
 	public static class HyperGraphDecoderMainLoop
 	{
-		public static Expression<Action<TSketch, List<ulong>>> GetDecode<TSketch>(
+		public static Expression<Action<TSketch, List<ulong>, List<ulong>>> GetDecode<TSketch>(
 			Expression<Func<ulong, TSketch, bool>> IsPure,
-			Expression<Action<ulong, TSketch, List<ulong>>> RemoveAndAddIfPure
+			Expression<Action<ulong, TSketch, List<ulong>, List<ulong>>> RemoveAndAddIfPure
 			)
 			where TSketch : IHyperGraphDecoderSketch<TSketch>
 		{
-			var f = CompiledActions.Create<TSketch, List<ulong>>(out var sketch_, out var pure_);
+			var f = CompiledActions.Create<TSketch, List<ulong>, List<ulong>>(out var sketch_, out var pure_, out var decodedKeys_);
 			f.S.While(
 			pure_.V.Call<int>("Count") > 0,
 
@@ -33,7 +33,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 					.IfThen(
 						S.Function(IsPure, pureBucketIndex.V, sketch_.V),
 						new Scope().GoToEnd(S))
-					.Action(RemoveAndAddIfPure, pureBucketIndex.V, sketch_.V, pure_.V)
+					.Action(RemoveAndAddIfPure, pureBucketIndex.V, sketch_.V, pure_.V, decodedKeys_.V)
 			);
 			return f.Construct();
 		}
@@ -58,10 +58,10 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		}
 
 
-		public static Expression<Action<ulong, TSketch, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
+		public static Expression<Action<ulong, TSketch, List<ulong>, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
 			where TSketch : ISketch<TSketch>
 		{
-			var a = CompiledActions.Create<ulong, TSketch, List<ulong>>(out var key_, out var sketch_, out var pures_);
+			var a = CompiledActions.Create<ulong, TSketch, List<ulong>, List<ulong>>(out var key_, out var sketch_, out var pures_, out var decodeKeys_);
 
 			a.S
 				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
@@ -73,6 +73,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 						{
 							v.scope.AddExpression(pures_.V.Call<NoneType>("Add", v.key));
 							v.scope.AddExpression(sketch_.V.Call<NoneType>(v.action, v.key, value_.V));
+							v.scope.AddExpression(decodeKeys_.V.Call<NoneType>("Add", value_.V));
 						}
 					)
 				.IfThen(
