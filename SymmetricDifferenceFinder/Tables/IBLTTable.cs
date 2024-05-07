@@ -33,10 +33,23 @@ namespace SymmetricDifferenceFinder.Tables
 			_table[key].keySum += value;
 		}
 
+		public void Remove(Hash key, Key value)
+		{
+			_table[key].count--;
+			_table[key].hashSum -= key;
+			_table[key].keySum -= value;
+		}
+
+		public IBLTTable GetSymmetricDifference(IBLTTable other)
+		{
+
+
+		}
 
 		public int Size()
 		{
 			return _table.Length;
 		}
+
 	}
 }

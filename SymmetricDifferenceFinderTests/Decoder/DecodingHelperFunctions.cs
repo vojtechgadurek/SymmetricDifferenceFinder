@@ -4,13 +4,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using SymmetricDifferenceFinder.Decoders.Common;
 
 namespace SymmetricDifferenceFinderTests.Decoder
 {
 	public class DecodingHelperFunctionsTest
 	{
 
-		struct MockTable : ISketch
+		struct MockTable : ISketch<MockTable>
 		{
 			public ulong[] _table;
 
@@ -19,12 +20,19 @@ namespace SymmetricDifferenceFinderTests.Decoder
 				_table = table;
 			}
 
+			public int Size => throw new NotImplementedException();
+
 			public ulong Get(ulong key)
 			{
 				return _table[key];
 			}
 
-			public ISketch SymmetricDifference(ISketch other)
+			public bool IsEmpty()
+			{
+				throw new NotImplementedException();
+			}
+
+			public MockTable SymmetricDifference(MockTable other)
 			{
 				throw new NotImplementedException();
 			}

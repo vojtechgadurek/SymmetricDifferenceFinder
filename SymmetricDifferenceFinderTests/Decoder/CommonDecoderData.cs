@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SymmetricDifferenceFinder.Decoders
+namespace SymmetricDifferenceFinderTests.Decoder
 {
-	public class HyperGraphDecoder
-	{
-	}
+
 }
+

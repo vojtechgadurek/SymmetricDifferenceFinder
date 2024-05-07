@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SymmetricDifferenceFinder.Decoders.Common;
 
 namespace SymmetricDifferenceFinder.Decoders
 {
-	public interface ISketch<T>
+	public interface IDecoder
 	{
-		ulong Get(Hash key);
+		void Decode();
+		HashSet<Key> GetDecodedValues();
 
-		int Size { get; }
-		T SymmetricDifference(T other);
-
-		bool IsEmpty();
+		DecodingState DecodingState { get; }
 	}
-
 }
