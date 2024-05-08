@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
@@ -11,7 +12,17 @@ namespace SymmetricDifferenceFinderTests.Decoder
 {
 	public class CommonDecoderTests
 	{
-		void SimpleDecodingTest(Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor)
+
+		void Encode(ulong key, IEnumerable<Func<ulong, ulong>> hfs, ITable table)
+		{
+			foreach (var hf in hfs)
+			{
+				table.Add(hf(key), key);
+			}
+		}
+		void SimpleDecodingTest(
+			Func<int, ITable> tableFactory,
+			Func<ITable, IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderFactory)
 		{
 			// Test decoding over one 
 			const int size = 10;
@@ -22,7 +33,7 @@ namespace SymmetricDifferenceFinderTests.Decoder
 				table[i] = i;
 			}
 
-			var decoder = decoderConstructor(table, new Expression<Func<ulong, ulong>>[] { (ulong x) => x });
+			var decoder = decoderFactory(table, new Expression<Func<ulong, ulong>>[] { (ulong x) => x });
 
 			decoder.Decode();
 

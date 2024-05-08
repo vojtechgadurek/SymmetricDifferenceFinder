@@ -11,34 +11,6 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 {
 	public static class DecodingHelperFunctions
 	{
-		public static Expression<Func<Hash, TSketch, bool>> GetLooksPure<TSketch>(HashingFunctions hashingFunctions)
-		where TSketch : ISketch<TSketch>
-		{
-			var f = CompiledFunctions.Create<Hash, TSketch, bool>(out var hash_, out var table_);
-
-			// Tests whether such hash is pure
-			// Let h_i be a hash function
-			// If exists h_i such that h_i(key) == hash, then key is pure
-			f.S
-				.Assign(f.Output, false)
-				.DeclareVariable(out var value_, table_.V.Call<Key>("Get", hash_.V))
-				.IfThen(
-					value_.V == 0,
-					new Scope().GoToEnd(f.S)
-					)
-				;
-
-			foreach (var hashFunc in hashingFunctions)
-			{
-				f.S.Function(hashFunc, value_.V, out var testedHash_)
-					.IfThen(testedHash_ == hash_.V,
-						new Scope()
-						.Assign(f.Output, true)
-						.GoToEnd(f.S)
-						);
-			}
-			return f.Construct();
-		}
 
 		public static Expression<Action<ulong, TSet, TSketch>> GetAddIfLooksPure<TSet, TSketch>(Expression<Func<ulong, TSketch, bool>> looksPure)
 

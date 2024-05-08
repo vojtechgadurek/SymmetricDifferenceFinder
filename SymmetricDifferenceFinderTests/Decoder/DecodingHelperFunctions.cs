@@ -20,7 +20,7 @@ namespace SymmetricDifferenceFinderTests.Decoder
 				_table = table;
 			}
 
-			public int Size => throw new NotImplementedException();
+			public int Size() => throw new NotImplementedException();
 
 			public ulong Get(ulong key)
 			{

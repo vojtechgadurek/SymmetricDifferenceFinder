@@ -4,17 +4,17 @@ using SymmetricDifferenceFinder.Decoders.HyperGraph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using HashingFunctions = System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<ulong, ulong>>>;
+
 
 namespace SymmetricDifferenceFinder.Tables
 {
 	public struct IBLTTable : ITable, IHyperGraphDecoderSketch<IBLTTable>
 	{
 		private IBLTCell[] _table;
-
-		int ISketch<IBLTTable>.Size => throw new NotImplementedException();
-
 		public IBLTTable(IBLTCell[] table)
 		{
 			_table = table;
@@ -100,6 +100,23 @@ namespace SymmetricDifferenceFinder.Tables
 		public bool IsEmpty()
 		{
 			return _table.All(x => 0 == x.Count && 0 == x.HashSum && 0 == x.KeySum);
+		}
+		public static Expression<Func<ulong, IBLTTable, bool>> GetLooksPure(HashingFunctions hashingFunctions)
+		{
+			var f = CompiledFunctions.Create<ulong, IBLTTable, bool>(out var key_, out var sketch_);
+			f.S.Assign(f.Output, false)
+				.DeclareVariable(out var count_, sketch_.V.Call<int>("GetCount", key_.V))
+				.IfThen(!(count_.V == 1 | count_.V == -1), new Scope().GoToEnd(f.S))
+				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
+				.DeclareVariable(out var hashCheck_, sketch_.V.Call<ulong>("GetHashCheck", key_.V))
+				.Assign(f.Output,
+					hashingFunctions
+						.Select(h => f.S.Function(h, value_.V))
+						.Select(k => k == hashCheck_.V)
+						.Aggregate((x, y) => x | y)
+						);
+			return f.Construct();
+
 		}
 	}
 }

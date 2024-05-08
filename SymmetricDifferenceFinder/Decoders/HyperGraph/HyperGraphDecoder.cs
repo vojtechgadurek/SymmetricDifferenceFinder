@@ -12,14 +12,32 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 	public class HyperGraphDecoderFactory<TSketch>
 		where TSketch : IHyperGraphDecoderSketch<TSketch>
 	{
-		readonly public Expression<Func<ulong, TSketch, bool>> IsPure;
 		readonly public Action<TSketch, int, List<ulong>> Initialize;
 		readonly public Action<TSketch, List<ulong>, List<ulong>> Decode;
-		public HyperGraphDecoderFactory(Expression<Func<ulong, TSketch, bool>> isPure, IEnumerable<Expression<HashingFunction>> hashingFunctions)
+		public HyperGraphDecoderFactory(IEnumerable<Expression<HashingFunction>> hashingFunctions)
 		{
-			IsPure = isPure;
-			Decode = HyperGraphDecoderMainLoop.GetDecode(IsPure, HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions)).Compile();
-			Initialize = DecodingHelperFunctions.GetInitialize(DecodingHelperFunctions.GetAddIfLooksPure<List<ulong>, TSketch>(isPure)).Compile();
+			//Find GetLooksPure for TSketch
+			var getLookPureMethodInfo = typeof(TSketch).GetMethod("GetLooksPure");
+			var getLookPureException = () => new InvalidOperationException(
+					$"{nameof(TSketch)} does not define public static Expression<Func<ulong, {nameof(TSketch)}, bool>>" +
+					$"GetLooksPure(IEnumerable<Expression<Func<ulong, ulong>>>)");
+
+			if (getLookPureMethodInfo is null)
+				throw getLookPureException();
+
+			Expression<Func<ulong, TSketch, bool>> looksPure;
+			try
+			{
+				looksPure =
+					(Expression<Func<ulong, TSketch, bool>>)getLookPureMethodInfo.Invoke(null, new object[] { hashingFunctions })!;
+			}
+			catch
+			{
+				throw getLookPureException();
+			}
+
+			Decode = HyperGraphDecoderMainLoop.GetDecode(looksPure, HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions)).Compile();
+			Initialize = DecodingHelperFunctions.GetInitialize(DecodingHelperFunctions.GetAddIfLooksPure<List<ulong>, TSketch>(looksPure)).Compile();
 		}
 
 		public HyperGraphDecoder<TSketch> Create(TSketch sketch)
@@ -40,7 +58,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			_initialize = initialize;
 			_decode = decode;
 			_sketch = sketch;
-			_decodedKeys = new List<ulong>(_sketch.Size);
+			_decodedKeys = new List<ulong>(_sketch.Size());
 
 		}
 
@@ -48,12 +66,10 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 		public DecodingState DecodingState => throw new NotImplementedException();
 
-
-
 		public void Decode()
 		{
 			List<ulong> pure = new List<ulong>();
-			_initialize(_sketch, _sketch.Size, pure);
+			_initialize(_sketch, _sketch.Size(), pure);
 			_decode(_sketch, pure, _decodedKeys);
 		}
 

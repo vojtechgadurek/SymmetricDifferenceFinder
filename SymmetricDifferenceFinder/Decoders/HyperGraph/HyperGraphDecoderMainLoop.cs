@@ -38,25 +38,6 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			return f.Construct();
 		}
 
-		public static Expression<Func<ulong, TSketch, bool>> GetIsPure<TSketch>(HashingFunctions hashingFunctions)
-			where TSketch : ISketch<TSketch>
-		{
-			var f = CompiledFunctions.Create<ulong, TSketch, bool>(out var key_, out var sketch_);
-			f.S.Assign(f.Output, false)
-				.DeclareVariable(out var count_, sketch_.V.Call<int>("GetCount", key_.V))
-				.IfThen(!(count_.V == 1 | count_.V == -1), new Scope().GoToEnd(f.S))
-				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
-				.DeclareVariable(out var hashCheck_, sketch_.V.Call<ulong>("GetHashCheck", key_.V))
-				.Assign(f.Output,
-					hashingFunctions
-						.Select(h => f.S.Function(h, value_.V))
-						.Select(k => k == hashCheck_.V)
-						.Aggregate((x, y) => x | y)
-						);
-			return f.Construct();
-
-		}
-
 
 		public static Expression<Action<ulong, TSketch, List<ulong>, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
 			where TSketch : ISketch<TSketch>
@@ -70,11 +51,11 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 				.Macro(
 					out var RemoveAndAddToPure,
 					((SmartExpression<ulong> key, Scope scope, string action) v) =>
-						{
-							v.scope.AddExpression(pures_.V.Call<NoneType>("Add", v.key));
-							v.scope.AddExpression(sketch_.V.Call<NoneType>(v.action, v.key, value_.V));
-							v.scope.AddExpression(decodeKeys_.V.Call<NoneType>("Add", value_.V));
-						}
+					{
+						v.scope.AddExpression(pures_.V.Call<NoneType>("Add", v.key));
+						v.scope.AddExpression(sketch_.V.Call<NoneType>(v.action, v.key, value_.V));
+						v.scope.AddExpression(decodeKeys_.V.Call<NoneType>("Add", value_.V));
+					}
 					)
 				.IfThen(
 				count_.V == 1,
@@ -87,5 +68,6 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 			return a.Construct();
 		}
+
 	}
 }

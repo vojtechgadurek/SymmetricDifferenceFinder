@@ -28,13 +28,33 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			toggleFunctionScheme.S.AddExpression(sketch.V.Call<NoneType>("Toggle", key.V, value.V));
 			var toggle = toggleFunctionScheme.Construct();
 
+			//Find GetLooksPure for TSketch
+			var getLookPureMethodInfo = typeof(TSketch).GetMethod("GetLooksPure");
+			var getLookPureException = () => new InvalidOperationException(
+					$"{nameof(TSketch)} does not define public static Expression<Func<ulong, {nameof(TSketch)}, bool>>" +
+					$"GetLooksPure(IEnumerable<Expression<Func<ulong, ulong>>>)");
 
-			var looksPure = DecodingHelperFunctions.GetLooksPure<TSketch>(hashingFunctions);
+			if (getLookPureMethodInfo is null)
+				throw getLookPureException();
+
+			Expression<Func<ulong, TSketch, bool>> looksPure;
+
+			try
+			{
+				looksPure = (Expression<Func<ulong, TSketch, bool>>)getLookPureMethodInfo.Invoke(null, new object[] { hashingFunctions })!;
+			}
+			catch
+			{
+				throw getLookPureException();
+			}
+
+
 			var addIfLooksPure = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, TSketch>(looksPure);
 			var oneDecodeStep = HPWMainDecodingLoop.GetOneDecodingStep(hashingFunctions, toggle, looksPure, addIfLooksPure);
 			OneDecodeStep = oneDecodeStep.Compile();
 			InitDecoding = DecodingHelperFunctions.GetInitialize(addIfLooksPure).Compile();
 		}
+
 
 		public HPWDecoder<TSketch> Create(TSketch sketch)
 		{
@@ -65,7 +85,7 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			OneDecodeStep = factory.OneDecodeStep;
 			InitDecoding = factory.InitDecoding;
 			_sketch = sketch;
-			Size = sketch.Size;
+			Size = sketch.Size();
 			_pureBuffer = new ulong[Size];
 			DecodingState = DecodingState.NotStarted;
 		}
