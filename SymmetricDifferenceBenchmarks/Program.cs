@@ -1,4 +1,4 @@
-﻿namespace SymmetricDifferenceBenchmarks
+﻿namespace SymmetricDifferenceFinderBenchmarks
 {
 	using BenchmarkDotNet.Running;
 	using SymmetricDifferenceFinderBenchmarks.Experiments;

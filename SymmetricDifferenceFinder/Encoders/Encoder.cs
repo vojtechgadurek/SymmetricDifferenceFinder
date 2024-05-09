@@ -14,7 +14,7 @@ namespace SymmetricDifferenceFinder.Encoders
 	public record EncoderConfiguration<TTable>(IEnumerable<IHashingFunctionScheme> HashingFunctionSchemes, int TableSize)
 		where TTable : struct, ITable;
 
-	public class EncoderFactory<TTable> where TTable : struct, ITable
+	public class EncoderFactory<TTable> : IEncoderFactory<TTable> where TTable : struct, ITable
 	{
 		readonly IEnumerable<Action<Key[], Hash[], int, int>> _hashToBufferFunctions;
 		readonly EncoderConfiguration<TTable> _configuration;
@@ -51,6 +51,11 @@ namespace SymmetricDifferenceFinder.Encoders
 		public EncoderFactory<TTable> CreateNewFactoryWithDifferentTableSize(int size)
 		{
 			return new EncoderFactory<TTable>(_configuration with { TableSize = size }, _tableFactory);
+		}
+
+		IEncoder IEncoderFactory<TTable>.Create(TTable table)
+		{
+			return Create(table);
 		}
 	}
 	public class Encoder<TTable> : IEncoder where TTable : struct, ITable
@@ -115,8 +120,7 @@ namespace SymmetricDifferenceFinder.Encoders
 
 		public void EncodeParallel(ulong[] buffer, int nItemsInBuffer)
 		{
-			if (_hashBuffer.Length < nItemsInBuffer)
-				_hashBuffer = new Hash[nItemsInBuffer];
+			if (_hashBuffer.Length < nItemsInBuffer) ResizeBuffer(buffer.Length);
 
 			foreach (var hashToBufferFunction in _hashToBufferFunctions)
 			{
@@ -129,21 +133,6 @@ namespace SymmetricDifferenceFinder.Encoders
 			}
 
 		}
-
-		public void EncodeParallelNoInterceptingHashingFunctions(ulong[] buffer, int nItemsInBuffer)
-		{
-			if (_hashBuffer.Length < nItemsInBuffer)
-				_hashBuffer = new Hash[nItemsInBuffer];
-
-			Parallel.ForEach(
-				_hashToBufferFunctions,
-				hs => Parallel.For(0, _nPartitions,
-					(i) => hs(buffer, _hashBuffer, _partitions[i].Item1, _partitions[i].Item2)
-					)
-				);
-
-		}
-
 
 		public TTable GetTable()
 		{

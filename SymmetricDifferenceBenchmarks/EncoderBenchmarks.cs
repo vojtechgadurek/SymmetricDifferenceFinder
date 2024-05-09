@@ -52,7 +52,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 			public ulong[] BenchmarkDecoder()
 			{
 				var config = new EncoderConfiguration<XORTable>(
-						new[] { HashingFunctionProvider.Get(hashingFunctionFamily, TableSize) },
+						new[] { HashingFunctionProvider.Get(hashingFunctionFamily, TableSize, 0) },
 						(int)TableSize
 					);
 

@@ -12,8 +12,4 @@
 		<ProjectReference Include="..\..\LittleSharp\LittleSharp\LittleSharp.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Encoders\NewFolder\" />
-	</ItemGroup>
-
 </Project>

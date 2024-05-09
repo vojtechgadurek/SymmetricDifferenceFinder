@@ -4,3 +4,7 @@ global using LittleSharp;
 global using LittleSharp.Literals;
 global using LittleSharp.Callables;
 global using LittleSharp.Utils;
+global using SymmetricDifferenceFinder.Decoders;
+global using SymmetricDifferenceFinder.Encoders;
+global using SymmetricDifferenceFinder.Tables;
+global using SymmetricDifferenceFinder.Utils;
