@@ -39,56 +39,28 @@ namespace SymmetricDifferenceFinderTests.Decoder
 		}
 
 		[Fact]
-		public void GetLooksPureTest()
-		{
-			Expression<Func<ulong, ulong>> f = x => x;
-			var looksPure = DecodingHelperFunctions.GetLooksPure<MockTable>(new List<Expression<Func<ulong, ulong>>> { f }).Compile();
-
-			var table = new ulong[10];
-
-			table[0] = 0;
-
-			table[1] = 1;
-
-			table[6] = 7;
-			var mockTable = new MockTable(table);
-
-			Assert.True(looksPure(1, mockTable));
-			Assert.False(looksPure(6, mockTable));
-
-			Assert.False(looksPure(0, mockTable));
-		}
-
-		[Fact]
 
 		public void AddIfLooksPureTest()
 		{
-			Expression<Func<ulong, ulong>> f = x => x;
-			var looksPure = DecodingHelperFunctions.GetLooksPure<MockTable>(new List<Expression<Func<ulong, ulong>>> { f });
-			var addIfLooksPure = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, MockTable>(looksPure).Compile();
+			Expression<Func<ulong, MockTable, bool>> True = (ulong x, MockTable t) => true;
+			Expression<Func<ulong, MockTable, bool>> False = (ulong x, MockTable t) => false;
 
-			var table = new ulong[10];
-
-			table[0] = 0;
-
-			table[1] = 1;
-
-			table[6] = 7;
-			var mockTable = new MockTable(table);
+			var addIfLooksPureTrue = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, MockTable>(True).Compile();
+			var addIfLooksPureFalse = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, MockTable>(False).Compile();
 
 			var set = new HashSet<ulong>();
 
-			addIfLooksPure(1, set, mockTable);
+			addIfLooksPureTrue(1UL, set, new MockTable());
 
-			Assert.True(set.Contains(1));
+			Assert.Single(set);
+			Assert.Contains(1UL, set);
 
-			addIfLooksPure(6, set, mockTable);
+			addIfLooksPureFalse(2UL, set, new MockTable());
 
-			Assert.False(set.Contains(6));
+			Assert.Single(set);
+			Assert.Contains(1UL, set);
 
-			addIfLooksPure(0, set, mockTable);
 
-			Assert.False(set.Contains(0));
 		}
 	}
 }

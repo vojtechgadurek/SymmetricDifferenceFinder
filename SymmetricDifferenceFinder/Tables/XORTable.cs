@@ -79,7 +79,7 @@ namespace SymmetricDifferenceFinder.Tables
 			return merged;
 		}
 
-		public Expression<Func<Hash, XORTable, bool>> GetLooksPure(HashingFunctions hashingFunctions)
+		static public Expression<Func<Hash, XORTable, bool>> GetLooksPure(HashingFunctions hashingFunctions)
 		{
 			var f = CompiledFunctions.Create<Hash, XORTable, bool>(out var hash_, out var table_);
 

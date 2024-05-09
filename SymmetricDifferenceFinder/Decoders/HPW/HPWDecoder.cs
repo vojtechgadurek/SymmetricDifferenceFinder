@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using SymmetricDifferenceFinder.Decoders.Common;
+using SymmetricDifferenceFinder.Tables;
 using HashingFunctions = System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<ulong, ulong>>>;
 
 

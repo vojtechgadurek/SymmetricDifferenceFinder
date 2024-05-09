@@ -20,106 +20,56 @@ namespace SymmetricDifferenceFinderTests.Decoder
 				table.Add(hf(key), key);
 			}
 		}
-		void SimpleDecodingTest(
-			Func<int, ITable> tableFactory,
-			Func<ITable, IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderFactory)
-		{
-			// Test decoding over one 
-			const int size = 10;
-			ulong[] table = new ulong[size];
 
-			for (ulong i = 0; i < size; i++)
-			{
-				table[i] = i;
-			}
-
-			var decoder = decoderFactory(table, new Expression<Func<ulong, ulong>>[] { (ulong x) => x });
-
-			decoder.Decode();
-
-			Assert.True(table.All(x => x == 0));
-			for (ulong i = 1; i < size; i++)
-			{
-				Assert.Contains(i, decoder.GetDecodedValues());
-			}
-		}
-
-		void OverlayDecodingTest(Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor)
-		{
-			const int size = 11;
-			ulong[] table = new ulong[size];
-
-			for (ulong i = 1; i < size - 1; i++)
-			{
-				table[i] ^= i;
-				table[i + 1] ^= i;
-			}
-
-			var decoder = decoderConstructor(table, new Expression<Func<ulong, ulong>>[] { (ulong x) => x % size, (ulong x) => (x + 1) % size });
-
-			decoder.Decode();
-
-			Assert.True(table.All(x => x == 0));
-			for (ulong i = 1; i < size - 1; i++)
-			{
-				Assert.Contains(i, decoder.GetDecodedValues());
-			}
-		}
-
-
-		void FakeNonRegularFunctions(Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor, int size)
-		{
-			ulong[] table = new ulong[size];
-
-			for (ulong i = 1; i < (ulong)size - 1; i++)
-			{
-				table[0] ^= i;
-				table[i] = i;
-			}
-
-			var decoder = decoderConstructor(table, new Expression<Func<ulong, ulong>>[] { (ulong x) => x % (ulong)size, (ulong x) => 0 });
-
-			decoder.Decode();
-
-			Assert.True(table.All(x => x == 0));
-			for (ulong i = 1; i < (ulong)size - 1; i++)
-			{
-				Assert.Contains(i, decoder.GetDecodedValues());
-			}
-		}
-
-		[Fact]
-		public void SimpleHPWDecoderTest()
-		{
-			Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor =
-				(data, hf) => new HPWDecoderFactory<XORTable>(hf).Create(new XORTable(data));
-
-			SimpleDecodingTest(decoderConstructor);
-		}
-
-		[Fact]
-		public void OverlayHPWDecoderTest()
-		{
-			Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor =
-				(data, hf) => new HPWDecoderFactory<XORTable>(hf).Create(new XORTable(data));
-
-			OverlayDecodingTest(decoderConstructor);
-		}
 
 		[Theory]
-
-		[InlineData(2)]
-		[InlineData(4)]
+		[InlineData(3)]
 		[InlineData(5)]
-		[InlineData(9)]
+		[InlineData(7)]
+		[InlineData(8)]
 		[InlineData(10)]
-		[InlineData(20)]
+		[InlineData(13)]
 
-		public void FakeNonRegularHPWDecoderTest(int size)
+		public void RunSimpleDecodingTest(int size)
 		{
-			Func<ulong[], IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderConstructor =
-				(data, hf) => new HPWDecoderFactory<XORTable>(hf).Create(new XORTable(data));
-			FakeNonRegularFunctions(decoderConstructor, size);
+			var data = HashingFunctionsCombinations.GetValues((ulong)size);
+			var factories = DecoderSketchCombinations.GetValues();
+			foreach (var dat in data)
+			{
+				foreach (var fact in factories)
+				{
+					SimpleDecodingTest(fact.tableFactory, fact.decoderFactory, (int)dat.Item1, dat.Item2);
+				}
+			}
 		}
+
+
+		void SimpleDecodingTest(
+				Func<int, ITable> tableFactory,
+				Func<ITable, IEnumerable<Expression<Func<ulong, ulong>>>, IDecoder> decoderFactory,
+				int size, IEnumerable<Expression<Func<ulong, ulong>>> hfs)
+		{
+			// Test decoding over one 
+
+			var t = tableFactory(size);
+
+			var valuesToEncode = Enumerable.Range(1, size - 2).Select(x => (ulong)x).ToList();
+
+			var hfsCompiled = hfs.Select(hf => hf.Compile()).ToList();
+			foreach (var value in valuesToEncode)
+			{
+				Encode(value, hfsCompiled, t);
+			}
+
+			var decoder = decoderFactory(t, hfs);
+			decoder.Decode();
+
+
+			foreach (var i in valuesToEncode)
+			{
+				Assert.Contains(i, decoder.GetDecodedValues());
+			}
+		}
+
 	}
 }
