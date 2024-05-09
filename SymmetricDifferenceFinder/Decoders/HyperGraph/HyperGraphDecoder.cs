@@ -10,7 +10,7 @@ using SymmetricDifferenceFinder.Utils;
 
 namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 {
-	public class HyperGraphDecoderFactory<TSketch>
+	public class HyperGraphDecoderFactory<TSketch> : IDecoderFactory<TSketch>
 		where TSketch : IHyperGraphDecoderSketch<TSketch>
 	{
 		readonly public Action<TSketch, int, ListQueue<ulong>> Initialize;
@@ -38,13 +38,23 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			}
 
 
-			Decode = HyperGraphDecoderMainLoop.GetDecode(looksPure, HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions)).Compile();
-			Initialize = DecodingHelperFunctions.GetInitialize(DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPure)).Compile();
+			Decode = HyperGraphDecoderMainLoop.GetDecode(
+				looksPure, HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions)
+				).Compile();
+
+			Initialize = DecodingHelperFunctions.GetInitialize(
+				DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPure)
+				).Compile();
 		}
 
 		public HyperGraphDecoder<TSketch> Create(TSketch sketch)
 		{
 			return new HyperGraphDecoder<TSketch>(Initialize, Decode, sketch);
+		}
+
+		IDecoder IDecoderFactory<TSketch>.Create(TSketch sketch)
+		{
+			return Create(sketch);
 		}
 	}
 
@@ -55,7 +65,10 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>> _decode;
 		readonly List<ulong> _decodedKeys;
 
-		public HyperGraphDecoder(Action<TSketch, int, ListQueue<ulong>> initialize, Action<TSketch, ListQueue<ulong>, List<ulong>> decode, TSketch sketch)
+		public HyperGraphDecoder(
+			Action<TSketch, int, ListQueue<ulong>> initialize,
+			Action<TSketch, ListQueue<ulong>, List<ulong>> decode,
+			TSketch sketch)
 		{
 			_initialize = initialize;
 			_decode = decode;

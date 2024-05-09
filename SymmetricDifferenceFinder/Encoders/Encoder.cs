@@ -1,8 +1,10 @@
-﻿using LittleSharp.Utils;
+﻿using Iced.Intel;
+using LittleSharp.Utils;
 using SymmetricDifferenceFinder.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -51,7 +53,7 @@ namespace SymmetricDifferenceFinder.Encoders
 			return new EncoderFactory<TTable>(_configuration with { TableSize = size }, _tableFactory);
 		}
 	}
-	public class Encoder<TTable> where TTable : struct, ITable
+	public class Encoder<TTable> : IEncoder where TTable : struct, ITable
 	{
 
 		readonly TTable _table;
@@ -59,17 +61,45 @@ namespace SymmetricDifferenceFinder.Encoders
 
 		Hash[] _hashBuffer;
 
+		int _nPartitions = 16;
+
+		(int, int)[] _partitions;
+
 		public Encoder(TTable table, IEnumerable<Action<Key[], Hash[], int, int>> hashToBufferFunctions, int bufferSize)
 		{
 			_table = table;
 			_hashToBufferFunctions = hashToBufferFunctions;
-			_hashBuffer = new Hash[bufferSize];
+			ResizeBuffer(bufferSize);
+		}
+
+		public void SetPortions(int partitions)
+		{
+			_nPartitions = partitions;
+			ResizePartitions();
+		}
+
+		public void ResizeBuffer(int newSize)
+		{
+			_hashBuffer = new Hash[newSize];
+			ResizePartitions();
+
+		}
+		public void ResizePartitions()
+		{
+			_partitions = new (int, int)[_nPartitions];
+			int partitionLength = _hashBuffer.Length / _nPartitions;
+			int lastPartitionLength = partitionLength + _hashBuffer.Length % partitionLength;
+			for (int i = 0; i < _nPartitions - 1; i++)
+			{
+				_partitions[i] = (i * partitionLength, partitionLength);
+			}
+			_partitions[_nPartitions - 1] = ((_nPartitions - 1) * partitionLength, lastPartitionLength);
+
 		}
 
 		public void Encode(ulong[] buffer, int nItemsInBuffer)
 		{
-			if (_hashBuffer.Length < nItemsInBuffer)
-				_hashBuffer = new Hash[nItemsInBuffer];
+			if (_hashBuffer.Length < nItemsInBuffer) ResizeBuffer(buffer.Length);
 
 			foreach (var hashToBufferFunction in _hashToBufferFunctions)
 			{
@@ -82,6 +112,38 @@ namespace SymmetricDifferenceFinder.Encoders
 			}
 
 		}
+
+		public void EncodeParallel(ulong[] buffer, int nItemsInBuffer)
+		{
+			if (_hashBuffer.Length < nItemsInBuffer)
+				_hashBuffer = new Hash[nItemsInBuffer];
+
+			foreach (var hashToBufferFunction in _hashToBufferFunctions)
+			{
+
+				Parallel.For(0, _nPartitions, (i) => hashToBufferFunction(buffer, _hashBuffer, _partitions[i].Item1, _partitions[i].Item2));
+				for (int i = 0; i < nItemsInBuffer; i++)
+				{
+					_table.Add((uint)_hashBuffer[i], buffer[i]);
+				}
+			}
+
+		}
+
+		public void EncodeParallelNoInterceptingHashingFunctions(ulong[] buffer, int nItemsInBuffer)
+		{
+			if (_hashBuffer.Length < nItemsInBuffer)
+				_hashBuffer = new Hash[nItemsInBuffer];
+
+			Parallel.ForEach(
+				_hashToBufferFunctions,
+				hs => Parallel.For(0, _nPartitions,
+					(i) => hs(buffer, _hashBuffer, _partitions[i].Item1, _partitions[i].Item2)
+					)
+				);
+
+		}
+
 
 		public TTable GetTable()
 		{

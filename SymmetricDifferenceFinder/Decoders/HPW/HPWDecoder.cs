@@ -16,7 +16,7 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 {
 
 
-	public class HPWDecoderFactory<TSketch>
+	public class HPWDecoderFactory<TSketch> : IDecoderFactory<TSketch>
 		where TSketch : IHPWSketch<TSketch>
 	{
 		public readonly Action<Key[], int, HashSet<ulong>, HashSet<ulong>, TSketch> OneDecodeStep;
@@ -56,10 +56,14 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			InitDecoding = DecodingHelperFunctions.GetInitialize(addIfLooksPure).Compile();
 		}
 
-
 		public HPWDecoder<TSketch> Create(TSketch sketch)
 		{
 			return new HPWDecoder<TSketch>(this, sketch);
+		}
+
+		IDecoder IDecoderFactory<TSketch>.Create(TSketch sketch)
+		{
+			return Create(sketch);
 		}
 	}
 
