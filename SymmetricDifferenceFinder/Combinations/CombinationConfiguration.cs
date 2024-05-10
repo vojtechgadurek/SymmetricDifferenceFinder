@@ -17,7 +17,6 @@ namespace SymmetricDifferenceFinder.Combinations
 
 	{
 		public Func<int, TTable>? TableFactory;
-		public Func<int, HashingFunctions>? HashingFunctionFactory;
 		public Func<HashingFunctions, IDecoderFactory<TSketch>>? DecoderFactoryFactory;
 		public Func<int, ulong[]>? DataFactory;
 		public Func<TTable, TSketch>? TableToSketch;
@@ -27,13 +26,6 @@ namespace SymmetricDifferenceFinder.Combinations
 			TableFactory = tableFactory;
 			return this;
 		}
-
-		public CombinationConfiguration<TTable, TSketch> SetHashingFunctionFactory(Func<int, HashingFunctions> hashingFunctionFactory)
-		{
-			HashingFunctionFactory = hashingFunctionFactory;
-			return this;
-		}
-
 		public CombinationConfiguration<TTable, TSketch> SetDecoderFactoryFactory
 			(Func<HashingFunctions, IDecoderFactory<TSketch>> decoderFactoryFactory)
 		{

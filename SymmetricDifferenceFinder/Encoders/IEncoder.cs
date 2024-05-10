@@ -10,4 +10,10 @@ namespace SymmetricDifferenceFinder.Encoders
 	{
 		public void Encode(ulong[] buffer, int nItemsInBuffer);
 	}
+
+	public interface IParallelEncoder
+	{
+		public void EncodeParallel(ulong[] buffer, int nItemsInBuffer);
+
+	}
 }

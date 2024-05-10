@@ -58,7 +58,7 @@ namespace SymmetricDifferenceFinder.Encoders
 			return Create(table);
 		}
 	}
-	public class Encoder<TTable> : IEncoder where TTable : struct, ITable
+	public class Encoder<TTable> : IEncoder, IParallelEncoder where TTable : struct, ITable
 	{
 
 		readonly TTable _table;

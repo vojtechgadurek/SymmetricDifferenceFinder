@@ -17,7 +17,7 @@ namespace SymmetricDifferenceFinder.Combinations
 			.SetDecoderFactoryFactory(hfs => new HyperGraphDecoderFactory<IBLTTable>(hfs))
 			.SetTableToSketch(x => x);
 
-		public static CombinationConfiguration<XORTable, XORTable> CombinationConfiguration =
+		public static CombinationConfiguration<XORTable, XORTable> HPW =
 			new CombinationConfiguration<XORTable, XORTable>()
 			.SetTableFactory(x => new XORTable(x))
 			.SetDecoderFactoryFactory(hfs => new HPWDecoderFactory<XORTable>(hfs))
