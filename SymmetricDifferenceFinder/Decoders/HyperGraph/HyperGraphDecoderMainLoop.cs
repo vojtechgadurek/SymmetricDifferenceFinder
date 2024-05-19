@@ -1,4 +1,5 @@
-﻿using SymmetricDifferenceFinder.Utils;
+﻿using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftWindowsTCPIP;
+using SymmetricDifferenceFinder.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +13,13 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 {
 	public static class HyperGraphDecoderMainLoop
 	{
-		public static Expression<Action<TSketch, ListQueue<ulong>, List<ulong>>> GetDecode<TSketch>(
+		public static Expression<Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> GetDecode<TSketch>(
 			Expression<Func<ulong, TSketch, bool>> IsPure,
-			Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>>> RemoveAndAddIfPure
+			Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> RemoveAndAddIfPure
 			)
 			where TSketch : IHyperGraphDecoderSketch<TSketch>
 		{
-			var f = CompiledActions.Create<TSketch, ListQueue<ulong>, List<ulong>>(out var sketch_, out var pure_, out var decodedKeys_);
+			var f = CompiledActions.Create<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>(out var sketch_, out var pure_, out var addKeys_, out var removeKeys_);
 
 			f.S
 				.While(
@@ -34,17 +35,17 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 					.IfThen(
 						!S.Function(IsPure, pureBucketIndex.V, sketch_.V),
 						new Scope().GoToEnd(S))
-					.Action(RemoveAndAddIfPure, pureBucketIndex.V, sketch_.V, pure_.V, decodedKeys_.V)
+					.Action(RemoveAndAddIfPure, pureBucketIndex.V, sketch_.V, pure_.V, addKeys_.V, removeKeys_.V)
 			);
 
 			return f.Construct();
 		}
 
 
-		public static Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
+		public static Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
 			where TSketch : ISketch<TSketch>
 		{
-			var a = CompiledActions.Create<ulong, TSketch, ListQueue<ulong>, List<ulong>>(out var key_, out var sketch_, out var pures_, out var decodeKeys_);
+			var a = CompiledActions.Create<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>(out var key_, out var sketch_, out var pures_, out var addKeys_, out var removeKeys_);
 
 			a.S
 				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
@@ -62,13 +63,13 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 				count_.V == 1,
 				new Scope().This(out var q)
 					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, q, "Remove")))
-					.AddExpression(decodeKeys_.V.Call<NoneType>("Add", value_.V))
+					.AddExpression(addKeys_.V.Call<NoneType>("Add", value_.V))
 				)
 				.IfThen(
 				count_.V == -1,
 				new Scope().This(out var l)
 					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, l, "Add")))
-					.AddExpression(decodeKeys_.V.Call<NoneType>("Add", value_.V))
+					.AddExpression(removeKeys_.V.Call<NoneType>("Add", value_.V))
 				);
 
 			return a.Construct();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Diagnostics.Tracing.Parsers.AspNet;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -70,6 +71,40 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.DataSources
 			}
 			return data;
 		}
+
+		public static ulong GetRandomNextKMer(ulong kMer, int size, Random random)
+		{
+			ulong sizeMask = (1UL << (size * 2)) - 1UL;
+			ulong symbol = (ulong)random.Next(0, 2);
+			return ((kMer << 2) | symbol) & sizeMask;
+		}
+
+		public static ulong GetRandomBeforeKMer(ulong kMer, int size, Random random)
+		{
+			ulong sizeMask = (1UL << (size * 2)) - 1UL;
+			ulong symbol = (ulong)random.Next(0, 2);
+			return ((kMer >> 2) | (symbol) << (size * 2 - 2)) & sizeMask;
+		}
+
+
+		public static HashSet<ulong> GetRandomKMerData(int nItems, int stringLength)
+		{
+			Random random = new Random();
+			HashSet<ulong> data = new HashSet<ulong>();
+			for (int i = 0; i < nItems / stringLength; i++)
+			{
+				var x = GenerateNotNullRandomUInt64(0, random);
+				data.Add(x);
+				for (int j = 0; j < stringLength; j++)
+				{
+					x = GetRandomNextKMer(x, stringLength, random);
+					data.Add(x);
+				}
+			}
+			return data;
+		}
+
+
 
 	}
 

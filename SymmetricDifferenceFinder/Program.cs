@@ -6,7 +6,7 @@ public class Program
 
 	public static void Main(string[] args)
 	{
-		Tests.BasicRetrievalTests.TestMassagers();
+		Tests.BasicRetrievalTests.TestIBLT();
 		Tests.BasicRetrievalTests.TestMassagersConflict();
 	}
 }
