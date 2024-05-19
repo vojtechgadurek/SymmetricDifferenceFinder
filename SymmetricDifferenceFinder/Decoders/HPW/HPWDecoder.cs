@@ -72,27 +72,30 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 		where TSketch : IHPWSketch<TSketch>
 	{
 		readonly HashSet<Key> _decodedValues = new HashSet<Key>();
-		readonly TSketch _sketch;
+		readonly public TSketch Sketch;
 		HashSet<Key> _pure = new HashSet<Key>();
 		HashSet<Key> _pureNext = new HashSet<Key>();
 
 		public readonly Action<Key[], int, HashSet<ulong>, HashSet<ulong>, TSketch> OneDecodeStep;
 		public readonly Action<TSketch, int, HashSet<ulong>> InitDecoding;
 		public readonly int Size;
+		public int MaxNumberOfIterations;
 		int _iteration = 0;
 
 		public DecodingState DecodingState { get; private set; }
 		readonly ulong[] _pureBuffer;
 
 
+
 		public HPWDecoder(HPWDecoderFactory<TSketch> factory, TSketch sketch)
 		{
 			OneDecodeStep = factory.OneDecodeStep;
 			InitDecoding = factory.InitDecoding;
-			_sketch = sketch;
+			Sketch = sketch;
 			Size = sketch.Size();
 			_pureBuffer = new ulong[Size];
 			DecodingState = DecodingState.NotStarted;
+			MaxNumberOfIterations = Size * 4;
 		}
 
 
@@ -102,19 +105,51 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 		}
 		public void Decode()
 		{
-			InitDecoding(_sketch, Size, _pure);
+			InitDecoding(Sketch, Size, _pure);
+			_iteration = 0;
 
-			while (_iteration < Size * 4)
+			while (_iteration < MaxNumberOfIterations)
 			{
 
 
-				OneDecodeStep(_pure.ToArray(), _pure.Count, _pureNext, _decodedValues, _sketch);
+				OneDecodeStep(_pure.ToArray(), _pure.Count, _pureNext, _decodedValues, Sketch);
 
 				_pure = _pureNext;
 				_pureNext = new HashSet<ulong>(_pure.Count * 2);
 				if (_pure.Count == 0)
 				{
-					if (_sketch.IsEmpty())
+					if (Sketch.IsEmpty())
+					{
+						DecodingState = DecodingState.Success;
+						return;
+					}
+					else
+					{
+						DecodingState = DecodingState.Failed;
+						return;
+					}
+				}
+				_iteration++;
+			}
+			DecodingState = DecodingState.Shutdown;
+
+		}
+
+		public void OuterDecode(HashSet<Key> pure, HashSet<Key> pureNext, HashSet<Key> decodedValues)
+		{
+			_iteration = 0;
+
+			while (_iteration < MaxNumberOfIterations)
+			{
+
+
+				OneDecodeStep(pure.ToArray(), pure.Count(), pureNext, decodedValues, Sketch);
+
+				pure = pureNext;
+				pureNext = new HashSet<ulong>(pure.Count * 2);
+				if (pure.Count == 0)
+				{
+					if (Sketch.IsEmpty())
 					{
 						DecodingState = DecodingState.Success;
 						return;

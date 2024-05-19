@@ -31,7 +31,7 @@ namespace SymmetricDifferenceFinder.Combinations
 			}
 
 			answer.AddHashingFunction((size, offset) => family.GetScheme(size, offset).Create(),
-				(h) => Utils.HashingFunctionFilter.Filter(h, (9, 1), 0));
+				(h) => Utils.HashingFunctionFilter.Filter(h, (3, 29), 0));
 
 			return answer;
 		}

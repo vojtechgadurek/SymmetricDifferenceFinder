@@ -6,6 +6,7 @@ public class Program
 
 	public static void Main(string[] args)
 	{
-		Console.WriteLine(Directory.GetCurrentDirectory());
+		Tests.BasicRetrievalTests.TestMassagers();
+		Tests.BasicRetrievalTests.TestMassagersConflict();
 	}
 }

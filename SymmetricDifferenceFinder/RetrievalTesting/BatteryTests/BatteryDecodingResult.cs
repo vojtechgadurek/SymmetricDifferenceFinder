@@ -9,6 +9,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 	public record class BatteryDecodingResult
 	(
 		double Fullness,
-		double MeanDecodedCorrectly
+		double MeanDecodedCorrectly,
+		double MeanAverageDecoded
 	);
 }

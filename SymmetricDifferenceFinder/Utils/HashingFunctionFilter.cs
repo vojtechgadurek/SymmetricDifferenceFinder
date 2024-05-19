@@ -14,7 +14,7 @@ namespace SymmetricDifferenceFinder.Utils
 			var f = CompiledFunctions.Create<ulong, ulong>(out var value_);
 			f.S.Assign(f.Output, valueWhenNotUse)
 				.DeclareVariable(out var hash_, f.S.Function(hf, value_.V))
-				.Macro(out var test_, hash_.V % (ratio.use + ratio.notUse))
+				.Macro(out var test_, value_.V % (ratio.use + ratio.notUse))
 				.IfThen(test_ < ratio.use, new Scope().Assign(f.Output, hash_.V))
 				;
 			return f.Construct();

@@ -16,15 +16,22 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 			{
 				int numberOfItems = (int)(multiplier * Size);
 
-				var decodingResults = Enumerable.Range(0, numberOfTestsInBattery).AsParallel()
-					.Select(_ => test(numberOfItems)).Where(x => x.DecodedIncorrectly == 0).Count();
+				var decodingResults = Enumerable.Range(0, numberOfTestsInBattery)
+						.Select(_ => test(numberOfItems)).ToList()
+						.AsParallel();
+				;
 
-				var decodedCorrectly = (double)decodingResults / (double)numberOfTestsInBattery;
+				var decodedCorrectly = (double)decodingResults
+					.Where(x => x.DecodedIncorrectly == 0).Count()
+					/ (double)numberOfTestsInBattery;
+
+				var meanAverageDecoded = decodingResults
+					.Sum(x => (x.Size - x.DecodedIncorrectly) / x.Size) / (double)numberOfTestsInBattery;
+
 				var fullness = multiplier;
 
-				results.Add(new BatteryDecodingResult(fullness, decodedCorrectly));
+				yield return new BatteryDecodingResult(fullness, decodedCorrectly, meanAverageDecoded);
 			}
-			return results;
 		}
 	}
 }
