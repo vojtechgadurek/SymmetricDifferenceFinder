@@ -1,4 +1,4 @@
-combination = Test
+combination = IBLT
 testType = Battery
 start = 0.7
 end = 1.0

@@ -83,17 +83,17 @@ namespace SymmetricDifferenceFinder.Encoders
 			ResizePartitions();
 		}
 
-		public void ResizeBuffer(int newSize)
+		void ResizeBuffer(int newSize)
 		{
 			_hashBuffer = new Hash[newSize];
 			ResizePartitions();
 
 		}
-		public void ResizePartitions()
+		void ResizePartitions()
 		{
 			_partitions = new (int, int)[_nPartitions];
 			int partitionLength = _hashBuffer.Length / _nPartitions;
-			int lastPartitionLength = partitionLength + _hashBuffer.Length % partitionLength;
+			int lastPartitionLength = partitionLength + _hashBuffer.Length % _nPartitions;
 			for (int i = 0; i < _nPartitions - 1; i++)
 			{
 				_partitions[i] = (i * partitionLength, partitionLength);

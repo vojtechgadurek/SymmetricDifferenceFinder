@@ -18,7 +18,6 @@ namespace SymmetricDifferenceFinder.Combinations
 	{
 		public Func<int, TTable>? TableFactory;
 		public Func<HashingFunctions, IDecoderFactory<TSketch>>? DecoderFactoryFactory;
-		public Func<int, ulong[]>? DataFactory;
 		public Func<TTable, TSketch>? TableToSketch;
 
 		public CombinationConfiguration<TTable, TSketch> SetTableFactory(Func<int, TTable> tableFactory)

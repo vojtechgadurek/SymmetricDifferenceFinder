@@ -23,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\RedaFasta\RedaFasta\RedaFasta.csproj" />
 		<ProjectReference Include="..\SymmetricDifferenceFinder\SymmetricDifferenceFinder.csproj" />
 	</ItemGroup>
 

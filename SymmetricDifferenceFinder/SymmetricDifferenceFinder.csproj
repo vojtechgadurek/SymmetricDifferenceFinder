@@ -10,10 +10,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\FlashHash\FlashHash\FlashHash.csproj" />
 		<ProjectReference Include="..\..\LittleSharp\LittleSharp\LittleSharp.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Tests\" />
+		<ProjectReference Include="..\..\RedaFasta\RedaFasta\RedaFasta.csproj" />
 	</ItemGroup>
 
 </Project>

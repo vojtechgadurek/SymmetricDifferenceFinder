@@ -48,7 +48,6 @@ namespace SymmetricDifferenceFinderTests.EncoderTests
 			{
 				Assert.Equal(0UL, table[i]);
 			}
-
 		}
 
 		[Fact]
@@ -85,5 +84,43 @@ namespace SymmetricDifferenceFinderTests.EncoderTests
 		}
 
 
+		[Fact]
+		public void SimpleParallelEncodingTestWithModuloHashingFunction()
+		{
+
+			int size = 1024;
+
+
+
+			var encoder = new NoConflictEncoder<OverwriteTable>(
+				new OverwriteTable(new ulong[size]),
+				new List<Action<ulong[], ulong[], int, int>>()
+				{
+					(ulong[] keys, ulong[] hashes, int start, int length) =>
+					{
+						for (int i = 0; i < length; i++)
+						{
+							hashes[i] = keys[i];
+						}
+					}
+				},
+				4
+				);
+
+			encoder.SetPartitions(4);
+
+			encoder.EncodeParallel(new ulong[] { 1, 2, 3, 4 }, 4);
+
+			var table = encoder.GetTable()._table;
+			for (int i = 1; i < 5; i++)
+			{
+				Assert.Equal((ulong)i, table[i]);
+			}
+
+			for (int i = 5; i < size; i++)
+			{
+				Assert.Equal(0UL, table[i]);
+			}
+		}
 	}
 }

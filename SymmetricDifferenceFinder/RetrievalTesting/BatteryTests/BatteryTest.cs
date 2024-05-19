@@ -16,7 +16,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 			{
 				int numberOfItems = (int)(multiplier * Size);
 
-				var decodingResults = Enumerable.Range(0, numberOfTestsInBattery)
+				var decodingResults = Enumerable.Range(0, numberOfTestsInBattery).AsParallel()
 					.Select(_ => test(numberOfItems)).Where(x => x.DecodedIncorrectly == 0).Count();
 
 				var decodedCorrectly = (double)decodingResults / (double)numberOfTestsInBattery;

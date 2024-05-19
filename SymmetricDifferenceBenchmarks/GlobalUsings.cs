@@ -9,3 +9,6 @@ global using LittleSharp.Callables;
 global using SymmetricDifferenceFinder;
 global using SymmetricDifferenceFinder.Encoders;
 global using SymmetricDifferenceFinder.Tables;
+
+global using SymmetricDifferenceFinder.Combinations;
+global using RedaFasta;

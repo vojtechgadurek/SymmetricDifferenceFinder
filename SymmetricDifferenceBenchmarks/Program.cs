@@ -9,7 +9,7 @@
 		public static void Main(string[] args)
 		{
 			//BenchmarkRunner.Run<BasicEncodingBenchmark>();
-			BenchmarkRunner.Run<DeVirtualizationBenchmarks>();
+			BenchmarkRunner.Run<FastaFileReaderBenchmark>();
 		}
 	}
 }

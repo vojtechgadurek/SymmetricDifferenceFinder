@@ -10,3 +10,5 @@ global using SymmetricDifferenceFinder.Decoders;
 global using SymmetricDifferenceFinder.Decoders.HPW;
 global using SymmetricDifferenceFinder.Decoders.Common;
 global using SymmetricDifferenceFinder.Decoders.HyperGraph;
+
+global using RedaFasta;

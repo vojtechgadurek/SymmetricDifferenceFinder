@@ -48,6 +48,19 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.SimpleTests
 			_tableToSketch = tableToSketch;
 		}
 
+		public RetrievalTestFactory(
+			CombinationConfiguration<TTable, TSketch> configuration,
+			Func<int, HashingFunctions> hashingFunctionFactory,
+			Func<int, ulong[]> dataFactory
+			)
+		{
+			_tableFactory = configuration.TableFactory!;
+			_hashingFunctionFactory = hashingFunctionFactory;
+			_decoderFactoryFactory = configuration.DecoderFactoryFactory!;
+			_dataFactory = dataFactory;
+			_tableToSketch = configuration.TableToSketch!;
+		}
+
 		public RetrievalTest<TTable, TSketch> Get(int size)
 		{
 			var hfs = _hashingFunctionFactory(size);
@@ -60,6 +73,11 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.SimpleTests
 				_tableToSketch,
 				hfsCompiled
 				);
+		}
+
+		public Func<int, DecodingResult> GetFactory(int size)
+		{
+			return (numberOfItems) => Get(size).Run(numberOfItems);
 		}
 	}
 

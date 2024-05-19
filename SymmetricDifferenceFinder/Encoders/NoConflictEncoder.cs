@@ -14,7 +14,9 @@ namespace SymmetricDifferenceFinder.Encoders
 
 		Hash[][] _hashBuffer;
 
-		int _nPartitions = 16;
+		int _hashBufferLength;
+
+		int _nPartitions = 4;
 
 		(int, int)[] _partitions;
 
@@ -25,18 +27,20 @@ namespace SymmetricDifferenceFinder.Encoders
 			_table = table;
 			_hashToBufferFunctions = hashToBufferFunctions.ToList();
 			hashingFunctionNumber = _hashToBufferFunctions.Count();
+
 			ResizeBuffer(bufferSize);
 
 		}
 
-		public void SetPortions(int partitions)
+		public void SetPartitions(int partitions)
 		{
 			_nPartitions = partitions;
 			ResizePartitions();
 		}
 
-		public void ResizeBuffer(int newSize)
+		void ResizeBuffer(int newSize)
 		{
+			_hashBufferLength = newSize;
 			_hashBuffer = new Hash[hashingFunctionNumber][];
 			for (int i = 0; i < hashingFunctionNumber; i++)
 			{
@@ -45,11 +49,11 @@ namespace SymmetricDifferenceFinder.Encoders
 			ResizePartitions();
 
 		}
-		public void ResizePartitions()
+		void ResizePartitions()
 		{
 			_partitions = new (int, int)[_nPartitions];
-			int partitionLength = _hashBuffer.Length / _nPartitions;
-			int lastPartitionLength = partitionLength + _hashBuffer.Length % partitionLength;
+			int partitionLength = _hashBufferLength / _nPartitions;
+			int lastPartitionLength = partitionLength + _hashBufferLength % _nPartitions;
 			for (int i = 0; i < _nPartitions - 1; i++)
 			{
 				_partitions[i] = (i * partitionLength, partitionLength);
@@ -60,19 +64,24 @@ namespace SymmetricDifferenceFinder.Encoders
 
 		public void EncodeParallel(ulong[] buffer, int nItemsInBuffer)
 		{
-			if (_hashBuffer.Length < nItemsInBuffer) ResizeBuffer(buffer.Length);
+			if (_hashBufferLength < nItemsInBuffer) ResizeBuffer(buffer.Length);
 
 			Parallel.For(0, _hashToBufferFunctions.Count, (hf) =>
 			{
 
-				Parallel.For(0, _nPartitions, (i) => _hashToBufferFunctions[hf](buffer, _hashBuffer[hf], _partitions[i].Item1, _partitions[i].Item2));
+				_hashToBufferFunctions[hf](buffer, _hashBuffer[hf], 0, nItemsInBuffer);
 				for (int i = 0; i < nItemsInBuffer; i++)
 				{
-					_table.Add((uint)_hashBuffer[hf][i], buffer[i]);
+					_table.Add(_hashBuffer[hf][i], buffer[i]);
 				}
-			}
-			);
 
+				//_hashToBufferFunctions[hf](buffer, _hashBuffer[hf], 0, _hashBufferLength);
+				//for (int j = 0; j < _hashBufferLength; j++)
+				//{
+				//	_table.Add(_hashBuffer[hf][j], buffer[j]);
+				//}
+
+			});
 		}
 
 		public TTable GetTable()
