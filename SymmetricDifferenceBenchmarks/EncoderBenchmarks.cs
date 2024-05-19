@@ -77,6 +77,8 @@ namespace SymmetricDifferenceFinderBenchmarks
 			public const int Length = 1024;
 			public const int BufferLength = 4096;
 			public const int DataLength = Length * BufferLength;
+			public const int kMerSize = 31;
+			public const int charsInFile = 100_000_000;
 
 			[ParamsSource(nameof(TableLengths))]
 			public ulong TableSize;
@@ -91,7 +93,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 			public void SetUp()
 			{
 				StreamWriter writer = new StreamWriter("test.test");
-				writer.WriteLine(">test l=100000000 k=31");
+				writer.WriteLine($">test l={charsInFile} k={kMerSize}");
 				writer.WriteLine(RandomString(100000000));
 				string RandomString(int length)
 				{
@@ -109,7 +111,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 			}
 
 			[Benchmark]
-			public ulong[] BenchmarkDecoder()
+			public ulong[] ParalelEncode()
 			{
 				var encoder =
 					new NoConflictEncoder<XORTable>(
@@ -139,8 +141,8 @@ namespace SymmetricDifferenceFinderBenchmarks
 				return encoder.GetTable().GetUnderlyingTable();
 			}
 
-
-			public ulong[] BenchmarkDecoder2()
+			[Benchmark]
+			public ulong[] NonParralelEncode()
 			{
 				var encoder =
 					new Encoder<XORTable>(
@@ -174,7 +176,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 			public ulong[] BenchmarkDecoder3()
 			{
 				var encoder =
-					new Encoder<XORTable>(
+					new NoConflictEncoder<XORTable>(
 						new XORTable((int)TableSize),
 						HashingFunctionCombinations
 						.GetFromSameFamily(3, new MultiplyShiftFamily())

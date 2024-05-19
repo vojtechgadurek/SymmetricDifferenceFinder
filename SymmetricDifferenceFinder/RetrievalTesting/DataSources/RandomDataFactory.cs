@@ -32,9 +32,6 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.DataSources
 		}
 
 	}
-	void Test()
-	{
-	}
 }
 
 
