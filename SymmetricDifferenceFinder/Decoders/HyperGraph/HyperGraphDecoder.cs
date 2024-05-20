@@ -39,7 +39,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 
 			Decode = HyperGraphDecoderMainLoop.GetDecode(
-				looksPure, HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions)
+				looksPure, HyperGraphDecoderMainLoop.GetOnlyRemoveAddToPure<TSketch>(hashingFunctions)
 				).Compile();
 
 			Initialize = DecodingHelperFunctions.GetInitialize(
@@ -60,11 +60,11 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 	public class HyperGraphDecoder<TSketch> : IDecoder where TSketch : IHyperGraphDecoderSketch<TSketch>
 	{
-		TSketch _sketch;
+		readonly public TSketch Sketch;
 		readonly public Action<TSketch, int, ListQueue<ulong>> _initialize;
 		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> _decode;
-		readonly List<ulong> _addKeys;
-		readonly List<ulong> _removeKeys;
+		public List<ulong> AddKeys;
+		public readonly List<ulong> RemoveKeys;
 		HashSet<ulong> _decodedKeys;
 
 		public HyperGraphDecoder(
@@ -74,9 +74,9 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		{
 			_initialize = initialize;
 			_decode = decode;
-			_sketch = sketch;
-			_addKeys = new List<ulong>(_sketch.Size());
-			_removeKeys = new List<ulong>(_sketch.Size());
+			Sketch = sketch;
+			AddKeys = new List<ulong>(Sketch.Size());
+			RemoveKeys = new List<ulong>(Sketch.Size());
 
 		}
 
@@ -86,12 +86,21 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		public void Decode()
 		{
 			ListQueue<ulong> pure = new ListQueue<ulong>();
-			_initialize(_sketch, _sketch.Size(), pure);
-			_decode(_sketch, pure, _addKeys, _removeKeys);
-			_decodedKeys = new HashSet<ulong>(_addKeys);
-			_decodedKeys.SymmetricExceptWith(_removeKeys);
-			_state = DecodingState.Success;
+			_initialize(Sketch, Sketch.Size(), pure);
+			_decode(Sketch, pure, AddKeys, RemoveKeys);
+			_decodedKeys = new HashSet<ulong>(AddKeys);
+			_decodedKeys.SymmetricExceptWith(RemoveKeys);
+			if (Sketch.IsEmpty()) _state = DecodingState.Success;
+			else _state = DecodingState.Failed;
 		}
+
+		public void OuterDecode(ListQueue<ulong> pure, List<ulong> addKeys, List<ulong> removeKeys)
+		{
+			_decode(Sketch, pure, addKeys, removeKeys);
+			if (Sketch.IsEmpty()) _state = DecodingState.Success;
+			else _state = DecodingState.Failed;
+		}
+
 
 		public HashSet<ulong> GetDecodedValues()
 		{

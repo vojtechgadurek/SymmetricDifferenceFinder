@@ -168,7 +168,7 @@ namespace SymmetricDifferenceFinder.Improvements
 				{
 					Console.WriteLine($"{count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
 					valuesPossibleToPick = ClearSet(valuesPossibleToPick);
-					//Console.WriteLine($"{count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
+					//Console.WriteLine($"{_count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
 					if (nValues == valuesPossibleToPick.Count) break;
 					nValues = valuesPossibleToPick.Count;
 

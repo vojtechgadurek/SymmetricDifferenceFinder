@@ -1,4 +1,6 @@
-﻿using SymmetricDifferenceFinder.Decoders;
+﻿using BenchmarkDotNet.Attributes;
+using LittleSharp.Literals;
+using SymmetricDifferenceFinder.Decoders;
 using SymmetricDifferenceFinder.Decoders.HPW;
 using SymmetricDifferenceFinder.Decoders.HyperGraph;
 using System;
@@ -15,6 +17,8 @@ namespace SymmetricDifferenceFinder.Tables
 	public struct IBLTTable : ITable, IHyperGraphDecoderSketch<IBLTTable>
 	{
 		private IBLTCell[] _table;
+
+		static Func<ulong, ulong> ControlHashingFunction = HashingFunctionProvider.Get(typeof(MultiplyShiftFamily), ulong.MaxValue, 0).Create().Compile();
 		public IBLTTable(IBLTCell[] table)
 		{
 			_table = table;
@@ -31,17 +35,23 @@ namespace SymmetricDifferenceFinder.Tables
 			public ulong HashSum;
 			public ulong KeySum;
 		}
+
+		public ulong CallControlHashingFunction(ulong value)
+		{
+			return ControlHashingFunction(value);
+		}
+
 		public void Add(Hash key, Key value)
 		{
 			_table[key].Count++;
-			_table[key].HashSum += key;
+			_table[key].HashSum += CallControlHashingFunction(value);
 			_table[key].KeySum += value;
 		}
 
 		public void Remove(Hash key, Key value)
 		{
 			_table[key].Count--;
-			_table[key].HashSum -= key;
+			_table[key].HashSum -= CallControlHashingFunction(value);
 			_table[key].KeySum -= value;
 		}
 
@@ -109,12 +119,7 @@ namespace SymmetricDifferenceFinder.Tables
 				.IfThen(!(count_.V == 1 | count_.V == -1), new Scope().GoToEnd(f.S))
 				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
 				.DeclareVariable(out var hashCheck_, sketch_.V.Call<ulong>("GetHashCheck", key_.V))
-				.Assign(f.Output,
-					hashingFunctions
-						.Select(h => f.S.Function(h, value_.V))
-						.Select(k => k == hashCheck_.V)
-						.Aggregate((x, y) => x | y)
-						);
+				.Assign(f.Output, sketch_.V.Call<ulong>(nameof(CallControlHashingFunction), value_.V) == hashCheck_.V);
 			return f.Construct();
 
 		}

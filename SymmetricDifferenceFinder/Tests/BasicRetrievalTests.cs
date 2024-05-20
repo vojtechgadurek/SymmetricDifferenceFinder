@@ -49,6 +49,51 @@ namespace SymmetricDifferenceFinder.Tests
 			}
 		}
 
+		public static void TestIBLT3()
+		{
+			var test = Combinations.Combinations.IBLT();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetFactory();
+
+			int size = 10000;
+			var batteryTest = new BatteryTest(0.01, 1, 0.01, size);
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomData(x).ToArray());
+
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
+
+			foreach (var x in answer)
+			{
+				Console.WriteLine(x.ToString());
+			}
+		}
+
+
+		public static void TestIBLTMassager()
+		{
+			var test = Combinations.Combinations.IBLT();
+
+			var decoderFactoryFactory = test.DecoderFactoryFactory;
+
+			test.SetDecoderFactoryFactory((hfs) => new HyperGraphMassagerFactory<NumberStringFactory, IBLTTable>(
+				hfs,
+				(HyperGraphDecoderFactory<IBLTTable>)decoderFactoryFactory(hfs)));
+
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetNoConflictFactory();
+
+			int size = 1000;
+			var batteryTest = new BatteryTest(0.85, 30, 0.05, size);
+
+
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory>.GetRandomStringData(x, 4).ToArray());
+
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 10);
+
+			foreach (var x in answer)
+			{
+				Console.WriteLine(x.ToString());
+			}
+		}
+
+
 
 		public static void TestHPW3()
 		{

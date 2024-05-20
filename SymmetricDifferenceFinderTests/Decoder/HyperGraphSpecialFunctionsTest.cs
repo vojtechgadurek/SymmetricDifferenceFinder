@@ -75,8 +75,6 @@ namespace SymmetricDifferenceFinderTests.Decoder
 			Assert.Equal(1, a.Count);
 
 			FieldContains(0, 0, t, 0, 3);
-
-
 		}
 	}
 }

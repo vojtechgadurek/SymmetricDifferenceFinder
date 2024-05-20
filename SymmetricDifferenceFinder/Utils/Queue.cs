@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinder.Utils
 {
-	public class ListQueue<T>
+	public class ListQueue<T> : IEnumerable<T>
 	{
 		List<T> _values;
 
@@ -32,7 +33,14 @@ namespace SymmetricDifferenceFinder.Utils
 			return last;
 		}
 
+		public IEnumerator<T> GetEnumerator()
+		{
+			return _values.GetEnumerator();
+		}
 
-
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _values.GetEnumerator();
+		}
 	}
 }

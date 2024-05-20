@@ -74,6 +74,33 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 			return a.Construct();
 		}
+		public static Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> GetOnlyRemoveAddToPure<TSketch>(HashingFunctions hashingFunctions)
+		where TSketch : ISketch<TSketch>
+		{
+			var a = CompiledActions.Create<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>(out var key_, out var sketch_, out var pures_, out var addKeys_, out var removeKeys_);
+
+			a.S
+				.DeclareVariable(out var value_, sketch_.V.Call<ulong>("Get", key_.V))
+				.DeclareVariable(out var count_, sketch_.V.Call<int>("GetCount", key_.V))
+				.Macro(out var keys, hashingFunctions.Select(h => a.S.Function(h, value_.V)))
+				.Macro(
+					out var RemoveAndAddToPure,
+					((SmartExpression<ulong> key, Scope scope, string action) v) =>
+					{
+						v.scope.AddExpression(pures_.V.Call<NoneType>("Add", v.key));
+						v.scope.AddExpression(sketch_.V.Call<NoneType>(v.action, v.key, value_.V));
+					}
+					)
+				.IfThen(
+				count_.V == 1,
+				new Scope().This(out var q)
+					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, q, "Remove")))
+					.AddExpression(addKeys_.V.Call<NoneType>("Add", value_.V))
+				);
+			return a.Construct();
+		}
+
+
 
 	}
 }

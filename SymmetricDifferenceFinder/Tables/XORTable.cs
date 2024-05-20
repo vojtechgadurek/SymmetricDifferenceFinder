@@ -84,7 +84,7 @@ namespace SymmetricDifferenceFinder.Tables
 			var f = CompiledFunctions.Create<Hash, XORTable, bool>(out var hash_, out var table_);
 
 			// Tests whether such hash is pure
-			// Let h_i be a hash function
+			// Let h_i be _a hash function
 			// If exists h_i such that h_i(key) == hash, then key is pure
 			f.S
 				.Assign(f.Output, false)
