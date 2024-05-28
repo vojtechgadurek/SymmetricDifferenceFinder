@@ -4,8 +4,11 @@ namespace SymmetricDifferenceFinder;
 public class Program
 {
 
+	void T()
+	{
+	}
 	public static void Main(string[] args)
 	{
-		Tests.BasicRetrievalTests.TestIBLTMassager();
+		Tests.BasicRetrievalTests.TestMassagers();
 	}
 }

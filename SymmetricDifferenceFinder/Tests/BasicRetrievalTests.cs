@@ -128,8 +128,8 @@ namespace SymmetricDifferenceFinder.Tests
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
 			int size = 10000;
-			var batteryTest = new BatteryTest(1, 2, 0.1, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomStringData(x, 31).ToArray());
+			var batteryTest = new BatteryTest(0.7, 0.9, 0.1, size);
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomStringData(x, 1000).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
 

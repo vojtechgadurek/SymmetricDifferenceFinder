@@ -60,7 +60,6 @@ namespace SymmetricDifferenceFinder.Improvements
 				{
 					value = stringFactory.GetPossibleNext(value)[0];
 					data.Add(value);
-
 				}
 			}
 			return data;

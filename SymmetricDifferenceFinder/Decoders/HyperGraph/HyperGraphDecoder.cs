@@ -15,7 +15,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 	{
 		readonly public Action<TSketch, int, ListQueue<ulong>> Initialize;
 		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> Decode;
-		public HyperGraphDecoderFactory(IEnumerable<Expression<HashingFunction>> hashingFunctions)
+		public HyperGraphDecoderFactory(IEnumerable<Expression<HashingFunction>> hashingFunctions, bool allowNegativeCounts = true)
 		{
 			//Find GetLooksPure for TSketch
 			var getLookPureMethodInfo = typeof(TSketch).GetMethod("GetLooksPure");
@@ -38,8 +38,9 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			}
 
 
+			var decodingMethod = allowNegativeCounts ? HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions) : HyperGraphDecoderMainLoop.GetOnlyRemoveAddToPure<TSketch>(hashingFunctions);
 			Decode = HyperGraphDecoderMainLoop.GetDecode(
-				looksPure, HyperGraphDecoderMainLoop.GetOnlyRemoveAddToPure<TSketch>(hashingFunctions)
+				looksPure, decodingMethod
 				).Compile();
 
 			Initialize = DecodingHelperFunctions.GetInitialize(
