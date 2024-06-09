@@ -58,8 +58,8 @@ namespace SymmetricDifferenceFinder.Improvements
 		}
 		public void Decode()
 		{
-			int nMassages = _size;
-			_HPWDecoder.MaxNumberOfIterations = 5;
+			int nMassages = _size * 10;
+			_HPWDecoder.MaxNumberOfIterations = 10;
 			int count = 0;
 
 			ulong currentHash = 0;
@@ -72,14 +72,14 @@ namespace SymmetricDifferenceFinder.Improvements
 
 			while (nMassages > count)
 			{
-				var pickedValues = valuesPossibleToPick.Where(_ => _random.Next(4) < 1);
+				var pickedValues = valuesPossibleToPick.Where(_ => _random.Next(2) < 1);
 
 				//Console.WriteLine(_HPWDecoder.GetDecodedValues().Count);
 				List<ulong> values = new();
 				foreach (var value in pickedValues)
 				{
-					var next = RandomDataFactory.GetRandomNextKMer(value, 31, _random);
-					var before = RandomDataFactory.GetRandomBeforeKMer(value, 31, _random);
+					var next = RandomDataFactory.BeforeInString(value);
+					var before = RandomDataFactory.NextInString(value);
 
 					bool nextIsDecoded = _decodedValues.Contains(next);
 					bool beforeIsDecoded = _decodedValues.Contains(before);
@@ -113,8 +113,8 @@ namespace SymmetricDifferenceFinder.Improvements
 						{
 							valuesPossibleToPick.Remove(value);
 						}
-						valuesPossibleToPick.Add(RandomDataFactory.GetRandomNextKMer(value, 31, _random));
-						valuesPossibleToPick.Add(RandomDataFactory.GetRandomBeforeKMer(value, 31, _random));
+						valuesPossibleToPick.Add(RandomDataFactory.BeforeInString(value));
+						valuesPossibleToPick.Add(RandomDataFactory.NextInString(value));
 					}
 					else
 					{
@@ -145,8 +145,8 @@ namespace SymmetricDifferenceFinder.Improvements
 						{
 							valuesPossibleToPick.Remove(value);
 						}
-						valuesPossibleToPick.Add(RandomDataFactory.GetRandomNextKMer(value, 31, _random));
-						valuesPossibleToPick.Add(RandomDataFactory.GetRandomBeforeKMer(value, 31, _random));
+						valuesPossibleToPick.Add(RandomDataFactory.NextInString(value));
+						valuesPossibleToPick.Add(RandomDataFactory.BeforeInString(value));
 					}
 					else
 					{

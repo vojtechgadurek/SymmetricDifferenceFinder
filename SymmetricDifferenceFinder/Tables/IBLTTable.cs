@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using HashingFunctions = System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<ulong, ulong>>>;
@@ -111,6 +112,7 @@ namespace SymmetricDifferenceFinder.Tables
 		{
 			return _table.All(x => 0 == x.Count && 0 == x.HashSum && 0 == x.KeySum);
 		}
+
 		public static Expression<Func<ulong, IBLTTable, bool>> GetLooksPure(HashingFunctions hashingFunctions)
 		{
 			var f = CompiledFunctions.Create<ulong, IBLTTable, bool>(out var key_, out var sketch_);
@@ -121,7 +123,6 @@ namespace SymmetricDifferenceFinder.Tables
 				.DeclareVariable(out var hashCheck_, sketch_.V.Call<ulong>("GetHashCheck", key_.V))
 				.Assign(f.Output, sketch_.V.Call<ulong>(nameof(CallControlHashingFunction), value_.V) == hashCheck_.V);
 			return f.Construct();
-
 		}
 	}
 }

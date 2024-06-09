@@ -82,7 +82,6 @@ namespace SymmetricDifferenceFinder.Tests
 			int size = 1000;
 			var batteryTest = new BatteryTest(0.85, 30, 0.05, size);
 
-
 			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory>.GetRandomStringData(x, 4).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 10);
@@ -116,20 +115,20 @@ namespace SymmetricDifferenceFinder.Tests
 		public static void TestMassagers()
 		{
 			var test = Combinations.Combinations.HPW();
-			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetNoConflictFactory();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetFactory();
 
 
 			var decoderFactory = test.DecoderFactoryFactory;
-			Random random = new Random();
+			Random random = new Random(2024_1);
 
 
 			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
-			int size = 10000;
-			var batteryTest = new BatteryTest(0.7, 0.9, 0.1, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomStringData(x, 1000).ToArray());
+			int size = 100000;
+			var batteryTest = new BatteryTest(1.3, 1.7, 0.01, size);
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomStringData(x, 100).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
 

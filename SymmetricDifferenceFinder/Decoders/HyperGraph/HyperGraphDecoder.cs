@@ -14,7 +14,10 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		where TSketch : IHyperGraphDecoderSketch<TSketch>
 	{
 		readonly public Action<TSketch, int, ListQueue<ulong>> Initialize;
-		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> Decode;
+		//readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> Decode;
+		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int> DecodeWithLimitedNumberOfSteps;
+		readonly public IReadOnlyList<Expression<HashingFunction>> HashingFunctions;
+
 		public HyperGraphDecoderFactory(IEnumerable<Expression<HashingFunction>> hashingFunctions, bool allowNegativeCounts = true)
 		{
 			//Find GetLooksPure for TSketch
@@ -22,6 +25,8 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			var getLookPureException = () => new InvalidOperationException(
 					$"{nameof(TSketch)} does not define public static Expression<Func<ulong, {nameof(TSketch)}, bool>>" +
 					$"GetLooksPure(IEnumerable<Expression<Func<ulong, ulong>>>)");
+
+			this.HashingFunctions = hashingFunctions.ToList();
 
 			if (getLookPureMethodInfo is null)
 				throw getLookPureException();
@@ -39,10 +44,12 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 
 			var decodingMethod = allowNegativeCounts ? HyperGraphDecoderMainLoop.GetRemoveAndAddToPure<TSketch>(hashingFunctions) : HyperGraphDecoderMainLoop.GetOnlyRemoveAddToPure<TSketch>(hashingFunctions);
-			Decode = HyperGraphDecoderMainLoop.GetDecode(
-				looksPure, decodingMethod
-				).Compile();
-
+			//Decode = HyperGraphDecoderMainLoop.GetDecode(
+			//	looksPure, decodingMethod
+			//	).Compile();
+			DecodeWithLimitedNumberOfSteps = HyperGraphDecoderMainLoop.GetDecodedLimitedSteps(
+								looksPure, decodingMethod
+												).Compile();
 			Initialize = DecodingHelperFunctions.GetInitialize(
 				DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPure)
 				).Compile();
@@ -50,7 +57,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 
 		public HyperGraphDecoder<TSketch> Create(TSketch sketch)
 		{
-			return new HyperGraphDecoder<TSketch>(Initialize, Decode, sketch);
+			return new HyperGraphDecoder<TSketch>(Initialize, DecodeWithLimitedNumberOfSteps, HashingFunctions.Count(), sketch);
 		}
 
 		IDecoder IDecoderFactory<TSketch>.Create(TSketch sketch)
@@ -63,14 +70,16 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 	{
 		readonly public TSketch Sketch;
 		readonly public Action<TSketch, int, ListQueue<ulong>> _initialize;
-		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> _decode;
+		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int> _decode;
 		public List<ulong> AddKeys;
 		public readonly List<ulong> RemoveKeys;
 		HashSet<ulong> _decodedKeys;
+		int nHashFunctions;
 
 		public HyperGraphDecoder(
 			Action<TSketch, int, ListQueue<ulong>> initialize,
-			Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> decode,
+			Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int> decode,
+			int numberOfHashingFunctions,
 			TSketch sketch)
 		{
 			_initialize = initialize;
@@ -78,26 +87,28 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			Sketch = sketch;
 			AddKeys = new List<ulong>(Sketch.Size());
 			RemoveKeys = new List<ulong>(Sketch.Size());
-
+			nHashFunctions = numberOfHashingFunctions;
 		}
-
 		DecodingState _state = DecodingState.NotStarted;
 		public DecodingState DecodingState => _state;
+		public int IteratorMultiplicator = 2;
 
 		public void Decode()
 		{
 			ListQueue<ulong> pure = new ListQueue<ulong>();
+			//This expects decoding is not better than 2 time the size of the sketch
+			int numberOfSteps = nHashFunctions * Sketch.Size() * IteratorMultiplicator;
 			_initialize(Sketch, Sketch.Size(), pure);
-			_decode(Sketch, pure, AddKeys, RemoveKeys);
+			_decode(Sketch, pure, AddKeys, RemoveKeys, numberOfSteps);
 			_decodedKeys = new HashSet<ulong>(AddKeys);
 			_decodedKeys.SymmetricExceptWith(RemoveKeys);
 			if (Sketch.IsEmpty()) _state = DecodingState.Success;
 			else _state = DecodingState.Failed;
 		}
 
-		public void OuterDecode(ListQueue<ulong> pure, List<ulong> addKeys, List<ulong> removeKeys)
+		public void OuterDecode(ListQueue<ulong> pure, List<ulong> addKeys, List<ulong> removeKeys, int numberOfSteps)
 		{
-			_decode(Sketch, pure, addKeys, removeKeys);
+			_decode(Sketch, pure, addKeys, removeKeys, numberOfSteps);
 			if (Sketch.IsEmpty()) _state = DecodingState.Success;
 			else _state = DecodingState.Failed;
 		}

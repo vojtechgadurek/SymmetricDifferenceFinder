@@ -41,6 +41,37 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			return f.Construct();
 		}
 
+		public static Expression<Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int>> GetDecodedLimitedSteps<TSketch>(
+		Expression<Func<ulong, TSketch, bool>> IsPure,
+		Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> RemoveAndAddIfPure
+		)
+		where TSketch : IHyperGraphDecoderSketch<TSketch>
+		{
+			var f = CompiledActions.Create<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int>(out var sketch_, out var pure_, out var addKeys_, out var removeKeys_, out var numberOfSteps_);
+
+			f.S
+				.While(
+			pure_.V.Property<int>("Count") > 0,
+				new Scope()
+					.IfThen(numberOfSteps_.V <= 0, new Scope().GoToEnd(f.S))
+					.Assign(numberOfSteps_, numberOfSteps_.V - 1)
+					.This(out var S)
+					//Get the last element of pure list
+					.DeclareVariable(
+						out var pureBucketIndex,
+						pure_.V.Call<ulong>("Dequeue")
+						)
+					//Remove last element of pure list
+					.IfThen(
+						!S.Function(IsPure, pureBucketIndex.V, sketch_.V),
+						new Scope().GoToEnd(S))
+					.Action(RemoveAndAddIfPure, pureBucketIndex.V, sketch_.V, pure_.V, addKeys_.V, removeKeys_.V)
+			);
+
+			return f.Construct();
+		}
+
+
 
 		public static Expression<Action<ulong, TSketch, ListQueue<ulong>, List<ulong>, List<ulong>>> GetRemoveAndAddToPure<TSketch>(HashingFunctions hashingFunctions)
 			where TSketch : ISketch<TSketch>

@@ -19,7 +19,7 @@ namespace SymmetricDifferenceFinder.Decoders
 		bool IsEmpty();
 
 		// !!! ISketch has to also declare this method !!!
-		// public static Expression<Func<ulong, TSketch, bool>> GetLooksPure(HashingFunctions hashingFunctions);
+		// public static Expression<Func<ulong, TSketch, bool>> GetLooksPure(HashingFunctions HashingFunctions);
 		// ToDo implement compiler error via analyzers 
 	}
 }

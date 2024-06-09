@@ -16,3 +16,7 @@ global using SymmetricDifferenceFinder.Decoders.HyperGraph;
 global using SymmetricDifferenceFinder.RetrievalTesting.BatteryTests;
 global using SymmetricDifferenceFinder.RetrievalTesting;
 global using SymmetricDifferenceFinder.RetrievalTesting.DataSources;
+global using SymmetricDifferenceFinder.Improvements.Oracles;
+global using SymmetricDifferenceFinder.Improvements.StringFactories;
+global using SymmetricDifferenceFinder.Improvements.Graphs;
+
