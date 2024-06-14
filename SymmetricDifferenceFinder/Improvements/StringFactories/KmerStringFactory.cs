@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinder.Improvements.StringFactories
 {
-	struct KMerStringFactory : IStringFactory
+	public struct KMerStringFactory : IStringFactory
 	{
 		static int size = 31;
 

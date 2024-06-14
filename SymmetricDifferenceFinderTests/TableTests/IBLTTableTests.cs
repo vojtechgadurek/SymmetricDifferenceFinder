@@ -46,6 +46,13 @@ namespace SymmetricDifferenceFinderTests.TableTests
 
 			Assert.False(IsPure(3, t));
 
+			t.Add(0, 4);
+			t.Add(4, 4);
+			t.Add(4, 5);
+			t.Remove(4, 1);
+			Assert.False(IsPure(4, t));
+
+
 		}
 	}
 }

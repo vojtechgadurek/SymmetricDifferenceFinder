@@ -11,8 +11,35 @@ namespace SymmetricDifferenceFinder.Improvements;
 
 
 
+public class BinPackingAttackFinderToggle<TOracle>
+	where TOracle : struct, IOracle
+{
+	BinPackingAttackFinder<TOracle> _finder;
+	public BinPackingAttackFinderToggle(int size, List<HashingFunction> hfs)
+	{
+		_finder = new BinPackingAttackFinder<TOracle>(size, hfs);
+	}
+	public BinPackingAttackFinderToggle(List<HashingFunction> hfs, HyperGraph hyperGraph)
+	{
+		_finder = new BinPackingAttackFinder<TOracle>(hfs, hyperGraph);
+	}
 
-public class AttackVectorFinder<TOracle>
+	public void ToggleNode(ulong id)
+	{
+		if (_finder.ContainsNode(id))
+		{
+			_finder.RemoveNode(id);
+		}
+		else
+		{
+			_finder.AddNode(id);
+		}
+	}
+
+}
+
+
+public class BinPackingAttackFinder<TOracle>
 	where TOracle : struct, IOracle
 {
 	public HyperGraph Attacks;
@@ -20,13 +47,13 @@ public class AttackVectorFinder<TOracle>
 	TOracle _oracle = default;
 	List<Func<ulong, ulong>> _hfs;
 
-	public AttackVectorFinder(int size, List<Func<ulong, ulong>> hfs)
+	public BinPackingAttackFinder(int size, List<HashingFunction> hfs)
 	{
 		Attacks = new HyperGraph((ulong)size);
 		_hfs = hfs;
 	}
 
-	public AttackVectorFinder(int size, List<Func<ulong, ulong>> hfs, HyperGraph hyperGraph)
+	public BinPackingAttackFinder(List<HashingFunction> hfs, HyperGraph hyperGraph)
 	{
 		Attacks = hyperGraph;
 		_hfs = hfs;
@@ -74,5 +101,10 @@ public class AttackVectorFinder<TOracle>
 	public HashSet<ulong> GetBucket(ulong id)
 	{
 		return Attacks.GetBucket(id);
+	}
+
+	public bool ContainsNode(ulong id)
+	{
+		return _endpoints.ContainsNode(id);
 	}
 }

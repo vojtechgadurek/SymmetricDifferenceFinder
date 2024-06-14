@@ -94,13 +94,13 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 				count_.V == 1,
 				new Scope().This(out var q)
 					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, q, "Remove")))
-					.AddExpression(addKeys_.V.Call<NoneType>("Add", value_.V))
+					.AddExpression(removeKeys_.V.Call<NoneType>("Add", value_.V))
 				)
 				.IfThen(
 				count_.V == -1,
 				new Scope().This(out var l)
 					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, l, "Add")))
-					.AddExpression(removeKeys_.V.Call<NoneType>("Add", value_.V))
+					.AddExpression(addKeys_.V.Call<NoneType>("Add", value_.V))
 				);
 
 			return a.Construct();
@@ -126,7 +126,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 				count_.V == 1,
 				new Scope().This(out var q)
 					.BuildAction(RemoveAndAddToPure, keys.Select(key => (key, q, "Remove")))
-					.AddExpression(addKeys_.V.Call<NoneType>("Add", value_.V))
+					.AddExpression(removeKeys_.V.Call<NoneType>("Add", value_.V))
 				);
 			return a.Construct();
 		}

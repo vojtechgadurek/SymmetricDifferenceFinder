@@ -1,10 +1,13 @@
-﻿using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftAntimalwareEngine;
+﻿using Microsoft.Diagnostics.Tracing.Analysis;
+using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftAntimalwareEngine;
 using SymmetricDifferenceFinder.Decoders.HPW;
+using SymmetricDifferenceFinder.Improvements.Oracles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
@@ -12,11 +15,11 @@ using static System.Net.Mime.MediaTypeNames;
 namespace SymmetricDifferenceFinder.Improvements
 {
 
-	public class MassagerFactory : IDecoderFactory<XORTable>
+	public class MassagerFactory<TStringFactory> : IDecoderFactory<XORTable>
+		where TStringFactory : struct, IStringFactory
 	{
 		HPWDecoderFactory<XORTable> _decoderFactory;
 		IEnumerable<HashingFunction> _hfs;
-		Func<ulong, ulong> _getCLose;
 		public MassagerFactory(IEnumerable<Expression<HashingFunction>> hfs, HPWDecoderFactory<XORTable> factory)
 		{
 			_decoderFactory = factory;
@@ -24,18 +27,28 @@ namespace SymmetricDifferenceFinder.Improvements
 		}
 		public IDecoder Create(XORTable sketch)
 		{
-			return new Massager(_decoderFactory.Create(sketch), _hfs);
+			return new Massager<TStringFactory>(_decoderFactory.Create(sketch), _hfs);
 		}
 	}
 
-	public class Massager : IDecoder
+	public class Massager<TStringFactory> : IDecoder
+		where TStringFactory : struct, IStringFactory
 	{
 		HPWDecoder<XORTable> _HPWDecoder;
 		XORTable _table;
 		Random _random = new Random();
 		int _size;
-		IEnumerable<Func<ulong, ulong>> _hfs;
+		List<Func<ulong, ulong>> _hfs;
 		HashSet<ulong> _decodedValues;
+		TStringFactory _stringFactory = default;
+		PickOneRandomly<Cache<BeforeOracle<TStringFactory>>> _before = default;
+		PickOneRandomly<Cache<NextOracle<TStringFactory>>> _next = default;
+
+		HyperGraph _hyperGraph;
+		BinPackingAttackFinderToggle<Cache<BeforeOracle<TStringFactory>>> _beforeAtck;
+		BinPackingAttackFinderToggle<Cache<NextOracle<TStringFactory>>> _nextAtck;
+		EndpointsLocalizer<Cache<BeforeOracle<TStringFactory>>> beforeLocalizer = new();
+		EndpointsLocalizer<Cache<NextOracle<TStringFactory>>> nextLocalizer = new();
 
 		public DecodingState DecodingState => _HPWDecoder.DecodingState;
 
@@ -43,54 +56,51 @@ namespace SymmetricDifferenceFinder.Improvements
 		{
 			_table = HPWDecoder.Sketch;
 			_size = _table.Size();
-			_hfs = hfs;
+			_hfs = hfs.ToList();
 
 			_HPWDecoder = HPWDecoder;
 			_decodedValues = _HPWDecoder.GetDecodedValues();
+
+			_hyperGraph = new((ulong)HPWDecoder.Sketch.Size());
+			_beforeAtck = new(_hfs, _hyperGraph);
+			_nextAtck = new(_hfs, _hyperGraph);
 		}
 
-		HashSet<ulong> ClearSet(HashSet<ulong> set)
+
+		public void BinPackingDecode()
 		{
-			return set.Where(
-				x => _decodedValues.Contains(RandomDataFactory.GetRandomNextKMer(x, 31, _random)) && _decodedValues.Contains(RandomDataFactory.GetRandomBeforeKMer(x, 31, _random))
-				).ToHashSet();
 
-		}
-		public void Decode()
-		{
-			int nMassages = _size * 10;
-			_HPWDecoder.MaxNumberOfIterations = 10;
-			int count = 0;
-
-			ulong currentHash = 0;
-			HashSet<ulong> valuesPossibleToPick = new();
-
-			_HPWDecoder.Decode();
-			valuesPossibleToPick.UnionWith(_decodedValues);
-
-			int nValues = valuesPossibleToPick.Count;
-
-			while (nMassages > count)
+			for (ulong i = 0; i < (ulong)_HPWDecoder.Sketch.Size(); i += ((ulong)_random.Next(50)))
 			{
-				var pickedValues = valuesPossibleToPick.Where(_ => _random.Next(2) < 1);
+				var attacks = _hyperGraph.GetBucket(i);
 
-				//Console.WriteLine(_HPWDecoder.GetDecodedValues().Count);
-				List<ulong> values = new();
-				foreach (var value in pickedValues)
+				if (attacks.Count == 0) continue;
+				_HPWDecoder.Sketch.Toggle(i, attacks.First());
+				var value = _HPWDecoder.Sketch.Get(i);
+				if (_hfs.Select(f => f(value) == value).Aggregate(false, (x, y) => x || y))
 				{
-					var next = RandomDataFactory.BeforeInString(value);
-					var before = RandomDataFactory.NextInString(value);
+					_hfs.ForEach(f => _HPWDecoder.Sketch.Toggle(f(value), value));
+				};
+				_HPWDecoder.Sketch.Toggle(i, attacks.First());
+				var values = _HPWDecoder.GetDecodedValues();
 
-					bool nextIsDecoded = _decodedValues.Contains(next);
-					bool beforeIsDecoded = _decodedValues.Contains(before);
+				if (values.Contains(value)) values.Remove(value);
+				else values.Add(value);
+			}
+		}
 
-					if (nextIsDecoded == false) values.Add(next);
-					if (beforeIsDecoded == false) values.Add(before);
 
-					//if (nextIsDecoded == true && beforeIsDecoded == true) valuesPossibleToPick.Remove(next);
-				}
 
-				var possiblePures = new HashSet<ulong>();
+
+		public void ClearingStep()
+		{
+
+		}
+
+		public void VeryRandomAttackDecode()
+		{
+			void ToggleValues(HashSet<ulong> possiblePures, HashSet<ulong> nextPures, List<ulong> values)
+			{
 				foreach (var hf in _hfs)
 				{
 					foreach (var value in values)
@@ -102,60 +112,191 @@ namespace SymmetricDifferenceFinder.Improvements
 				}
 
 				HashSet<ulong> newlyDecodedValues = new();
-				_HPWDecoder.OuterDecode(possiblePures, new HashSet<ulong>(), newlyDecodedValues);
+				_HPWDecoder.OuterDecode(possiblePures, nextPures, newlyDecodedValues);
 
 				foreach (var value in newlyDecodedValues)
 				{
 					if (_decodedValues.Contains(value))
 					{
 						_decodedValues.Remove(value);
-						if (valuesPossibleToPick.Contains(value))
-						{
-							valuesPossibleToPick.Remove(value);
-						}
-						valuesPossibleToPick.Add(RandomDataFactory.BeforeInString(value));
-						valuesPossibleToPick.Add(RandomDataFactory.NextInString(value));
 					}
 					else
 					{
 						_decodedValues.Add(value);
-						valuesPossibleToPick.Add(value);
 					}
 				}
-
 				newlyDecodedValues.Clear();
+			}
+
+			var selectedValues = _decodedValues.Where(_ => _random.Next(2) == 0).ToList();
 
 
-				foreach (var hf in _hfs)
+
+			var values = selectedValues.Select(_before.GetRandom).Concat(selectedValues).Select(_next.GetRandom).ToList();
+
+		}
+
+
+
+		void ToggleValues(HashSet<ulong>? possiblePures, List<ulong> values)
+		{
+			foreach (var hf in _hfs)
+			{
+				foreach (var value in values)
 				{
-					foreach (var value in values)
+					var hash = hf(value);
+					_table.Toggle(hash, value);
+					if (possiblePures is not null)
 					{
-						var hash = hf(value);
-						_table.Toggle(hash, value);
 						possiblePures.Add(hash);
 					}
 				}
-				_HPWDecoder.OuterDecode(possiblePures, new HashSet<ulong>(), newlyDecodedValues);
-				foreach (var value in newlyDecodedValues)
-				{
-					if (_decodedValues.Contains(value))
-					{
-						_decodedValues.Remove(value);
-						if (valuesPossibleToPick.Contains(value))
-						{
-							valuesPossibleToPick.Remove(value);
-						}
-						valuesPossibleToPick.Add(RandomDataFactory.NextInString(value));
-						valuesPossibleToPick.Add(RandomDataFactory.BeforeInString(value));
-					}
-					else
-					{
-						_decodedValues.Add(value);
-						valuesPossibleToPick.Add(value);
-					}
-				}
-				newlyDecodedValues.Clear();
+			}
 
+			ToggleDecodedValues(values);
+		}
+
+		void Prune(double probability)
+		{
+			ToggleValues(null, _decodedValues.Where(_ => _random.NextDouble() > probability).ToList());
+		}
+
+
+		List<ulong> GetCloseToEndpoints(double probability)
+		{
+			List<ulong> values = new();
+			foreach (var value in beforeLocalizer.EndPoints)
+			{
+				values.Add(_before.GetRandom(value));
+			}
+			foreach (var value in nextLocalizer.EndPoints)
+			{
+				values.Add(_next.GetRandom(value));
+			}
+			return values.Where(_ => _random.NextDouble() > probability).ToList();
+		}
+
+
+		List<ulong> GetCloseToDecoded(double probability)
+		{
+			List<ulong> values = new();
+			foreach (var value in _decodedValues)
+			{
+				values.Add(_before.GetRandom(value));
+			}
+			foreach (var value in _decodedValues)
+			{
+				values.Add(_next.GetRandom(value));
+			}
+			return values.Where(_ => _random.NextDouble() > probability).ToList();
+		}
+
+
+		void ToggleValues(HashSet<ulong> possiblePures, HashSet<ulong> nextPures, List<ulong> values)
+		{
+			foreach (var hf in _hfs)
+			{
+				foreach (var value in values)
+				{
+					var hash = hf(value);
+					_table.Toggle(hash, value);
+					possiblePures.Add(hash);
+				}
+			}
+
+			HashSet<ulong> newlyDecodedValues = new();
+			_HPWDecoder.OuterDecode(possiblePures, nextPures, newlyDecodedValues);
+
+			foreach (var value in newlyDecodedValues)
+			{
+				if (_decodedValues.Contains(value))
+				{
+					_decodedValues.Remove(value);
+
+					nextLocalizer.RemoveNode(value);
+					beforeLocalizer.RemoveNode(value);
+				}
+				else
+				{
+					_decodedValues.Add(value);
+					nextLocalizer.AddNode(value);
+					beforeLocalizer.AddNode(value);
+
+				}
+			}
+			newlyDecodedValues.Clear();
+		}
+		public void RandomAttackDecode(bool probe)
+		{
+
+			int nMassages = _size / 100;
+			_HPWDecoder.MaxNumberOfIterations = 10;
+			int count = 0;
+
+
+			var possiblePures = new HashSet<ulong>();
+			var nextPures = new HashSet<ulong>();
+
+
+			while (nMassages > count)
+			{
+				//var pickedValues = valuesPossibleToPick.Where(_ => _random.Next(2) < 1);
+				//var pickedValues = Enumerable.Range(0, _size).Select(i => _hyperGraph.GetBucket((ulong)i).FirstOrDefault()).Where(x => x != default);
+				//Console.WriteLine(_HPWDecoder.GetDecodedValues().Count);
+				List<ulong> values = new();
+				//foreach (var value in pickedValues)
+				//{
+				//	var next = _next.GetRandom(value);
+				//	var before = _before.GetRandom(value);
+
+				//	bool nextIsDecoded = _decodedValues.Contains(next);
+				//	bool beforeIsDecoded = _decodedValues.Contains(before);
+
+				//	if (nextIsDecoded == false) values.Add(next);
+				//	if (beforeIsDecoded == false) values.Add(before);
+
+				//	//if (nextIsDecoded == true && beforeIsDecoded == true) valuesPossibleToPick.Remove(next);
+				//}
+
+				foreach (var value in beforeLocalizer.EndPoints)
+				{
+					values.Add(_before.GetRandom(value));
+				}
+				foreach (var value in nextLocalizer.EndPoints)
+				{
+					values.Add(_next.GetRandom(value));
+				}
+
+
+				values = values.Where(_ => _random.NextDouble() > 0.5).ToList();
+
+				List<ulong> valuesNext = new();
+				foreach (var value in values)
+				{
+					valuesNext.Add(_before.GetRandom(value));
+				}
+				foreach (var value in values)
+				{
+					valuesNext.Add(_next.GetRandom(value));
+				}
+
+
+				values = values.Concat(valuesNext).Concat(nextLocalizer.EndPoints).Concat(beforeLocalizer.EndPoints).ToList();
+
+
+
+				//There are two for reason
+				//We add some values in the first
+				//that are removed in the second
+
+				ToggleValues(possiblePures, nextPures, values);
+				possiblePures = nextPures;
+				nextPures = new HashSet<ulong>();
+
+				ToggleValues(possiblePures, nextPures, values);
+
+				possiblePures = nextPures;
+				nextPures = new HashSet<ulong>();
 
 				if (_HPWDecoder.DecodingState == DecodingState.Success)
 				{
@@ -164,20 +305,138 @@ namespace SymmetricDifferenceFinder.Improvements
 
 				count++;
 
-				if (count % (_size / 100) == 0)
+				if (count % 100 == 0 && probe)
 				{
-					Console.WriteLine($"{count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
-					valuesPossibleToPick = ClearSet(valuesPossibleToPick);
+					ToggleValues(new(), new(), _decodedValues.Where(_ => _random.Next(10) == 0).ToList());
+				}
+
+				if (count % 100 == 0)
+				{
+
+					//Console.WriteLine($"{beforeLocalizer.EndPoints.Count()} {nextLocalizer.EndPoints.Count()}");
+
+					//Console.WriteLine(beforeLocalizer.Nodes.Where(x => x.Value.IsEndpoint()).Count());
+
+					beforeLocalizer = new();
+					nextLocalizer = new();
+					foreach (var value in _decodedValues)
+					{
+						beforeLocalizer.AddNode(value);
+						nextLocalizer.AddNode(value);
+					}
+					//Console.WriteLine($"{beforeLocalizer.EndPoints.Count()} {nextLocalizer.EndPoints.Count()}");
+					//Console.WriteLine($"{count} {values.Count()} {_decodedValues.Count}");
 					//Console.WriteLine($"{_count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
-					if (nValues == valuesPossibleToPick.Count) break;
-					nValues = valuesPossibleToPick.Count;
-
-
 				}
 			}
-
 		}
 
+		public void ToggleDecodedValues(IEnumerable<ulong> values)
+		{
+			foreach (var value in values)
+			{
+				if (_decodedValues.Contains(value))
+				{
+					_decodedValues.Remove(value);
+					beforeLocalizer.RemoveNode(value);
+					nextLocalizer.RemoveNode(value);
+				}
+				else
+				{
+					_decodedValues.Add(value);
+					beforeLocalizer.AddNode(value);
+					nextLocalizer.AddNode(value);
+				}
+			}
+		}
+		public void Decode()
+		{
+			_HPWDecoder.MaxNumberOfIterations = _size / 10;
+			_HPWDecoder.Decode();
+			foreach (var value in _decodedValues)
+			{
+				beforeLocalizer.AddNode(value);
+				nextLocalizer.AddNode(value);
+			};
+
+			HashSet<ulong> pure = new HashSet<ulong>();
+			HashSet<ulong> nextPure = new HashSet<ulong>();
+			HashSet<ulong> decodedValues = new HashSet<ulong>();
+
+			int maxRounds = 1000;
+			for (int i = 0; i < maxRounds; i++)
+			{
+				if (_HPWDecoder.DecodingState == DecodingState.Success)
+				{
+					Console.WriteLine(i);
+					break;
+				}
+				//BinPackingDecode();
+
+				List<ulong> values;
+				if (i % 7 < 0)
+				{
+					values = GetCloseToEndpoints(0.5);
+				}
+				else
+				{
+					values = GetCloseToDecoded(0.5);
+				}
+
+				ToggleValues(pure, values);
+
+				_HPWDecoder.OuterDecode(pure, nextPure, decodedValues);
+				ToggleDecodedValues(decodedValues);
+				decodedValues.Clear();
+
+				ToggleValues(nextPure, values);
+
+				pure.Clear();
+
+				_HPWDecoder.OuterDecode(nextPure, pure, decodedValues);
+				ToggleDecodedValues(decodedValues);
+				decodedValues.Clear();
+
+				nextPure.Clear();
+
+
+				if (i < maxRounds * 0.8 && _random.NextDouble() <= 0.05 && _HPWDecoder.DecodingState != DecodingState.Success)
+				{
+					Prune(0.1);
+					beforeLocalizer = new();
+					nextLocalizer = new();
+					foreach (var value in _decodedValues)
+					{
+						beforeLocalizer.AddNode(value);
+						nextLocalizer.AddNode(value);
+					};
+
+				}
+
+				if (i == maxRounds - 1)
+				{
+					Console.WriteLine(i);
+				}
+			}
+		}
+		//public void Decode()
+		//{
+		//	_HPWDecoder.Decode();
+		//	foreach (var value in _decodedValues)
+		//	{
+		//		beforeLocalizer.AddNode(value);
+		//		nextLocalizer.AddNode(value);
+		//	}
+		//	for (int i = 0; i < 10; i++)
+		//	{
+		//		if (_HPWDecoder.DecodingState == DecodingState.Success) break;
+		//		//BinPackingDecode();
+		//		RandomAttackDecode(true);
+		//	}
+		//	RandomAttackDecode(false);
+
+
+		//}
 
 		public HashSet<ulong> GetDecodedValues()
 		{

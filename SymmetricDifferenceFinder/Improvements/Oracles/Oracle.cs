@@ -11,6 +11,11 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 	{
 		TStringFactory _stringFactory = default;
 
+		public int Size()
+		{
+			return _stringFactory.NPossibleNext;
+		}
+
 		public NextOracle()
 		{
 
@@ -30,9 +35,15 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 		{
 
 		}
+
 		public ulong[] GetClose(ulong id)
 		{
 			return _stringFactory.GetPossibleBefore(id);
+		}
+
+		public int Size()
+		{
+			return _stringFactory.NPossibleBefore;
 		}
 	}
 }

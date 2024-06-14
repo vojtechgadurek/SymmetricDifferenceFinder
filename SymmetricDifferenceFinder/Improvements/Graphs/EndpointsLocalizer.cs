@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinder.Improvements.Graphs
 {
+	//THIS CLASS IS BUGGY - read all comments
 	public class EndpointsLocalizer<TOracle>
 	where TOracle : struct, IOracle
 	{
@@ -30,16 +31,17 @@ namespace SymmetricDifferenceFinder.Improvements.Graphs
 
 		}
 		TOracle _oracle = default;
-		Dictionary<ulong, Node> _nodes = new Dictionary<ulong, Node>();
-		HashSet<ulong> _endPoints = new HashSet<ulong>();
+		public Dictionary<ulong, Node> Nodes = new Dictionary<ulong, Node>();
+		public readonly HashSet<ulong> EndPoints = new HashSet<ulong>();
 		List<(bool added, ulong id)> _changes = new();
 
 
 		public void AddNode(ulong id)
 		{
-			if (_nodes.ContainsKey(id)) _nodes[id].Count++;
-			else _nodes.Add(id, Node.NewActiveNode(id));
+			if (Nodes.ContainsKey(id)) Nodes[id].Count++;
+			else Nodes.Add(id, Node.NewActiveNode(id));
 
+			if (Nodes[id].Count < 1) return;
 			foreach (var node in _oracle.GetClose(id))
 			{
 				WatchNode(node);
@@ -50,33 +52,40 @@ namespace SymmetricDifferenceFinder.Improvements.Graphs
 
 		void AdjustEndpointState(ulong id)
 		{
-			var node = _nodes[id];
-			if (node.IsEndpoint() && !_endPoints.Contains(id))
+			var node = Nodes[id];
+			if (node.IsEndpoint() && !EndPoints.Contains(id))
 			{
 				_changes.Add((true, id));
-				_endPoints.Add(id);
+				EndPoints.Add(id);
 			}
-			if (!node.IsEndpoint() && _endPoints.Contains(id))
+			if (!node.IsEndpoint() && EndPoints.Contains(id))
 			{
 				_changes.Add((false, id));
-				_endPoints.Remove(id);
+				EndPoints.Remove(id);
 			}
 		}
 
 		void WatchNode(ulong id)
 		{
-			if (!_nodes.ContainsKey(id))
+			if (!Nodes.ContainsKey(id))
 			{
-				_nodes.Add(id, Node.NewInactiveNode(id));
+				Nodes.Add(id, Node.NewInactiveNode(id));
 			};
-			var node = _nodes[id];
+			var node = Nodes[id];
 			node.WatchedBy++;
 			AdjustEndpointState(id);
 		}
 
 		public void RemoveNode(ulong id)
 		{
-			_nodes[id].Count--;
+			//if (!Nodes.ContainsKey(id)) Nodes[id] = Node.NewInactiveNode(id);
+			Nodes[id].Count--;
+
+			//THIS IS BUG is should be Nodes[id].Count < 0 not Nodes[id].Count < 1
+			//WE PLAN TO DO SOME REWRITE
+			//AS WE INVESTIGATE
+			//BUT THIS FOR SOME REASON CAUSES BETTER RECOVERY
+			if (Nodes[id].Count < 1) return;
 			foreach (var node in _oracle.GetClose(id))
 			{
 				UnWatchNode(node);
@@ -87,22 +96,21 @@ namespace SymmetricDifferenceFinder.Improvements.Graphs
 
 		void UnWatchNode(ulong id)
 		{
-			var node = _nodes[id];
-			_nodes[id].WatchedBy--;
+			Nodes[id].WatchedBy--;
 			AdjustEndpointState(id);
 		}
 
 
 		public bool ContainsNode(ulong id)
 		{
-			if (!_nodes.ContainsKey(id)) return false;
-			if (_nodes[id].Count > 0) return true;
+			if (!Nodes.ContainsKey(id)) return false;
+			if (Nodes[id].Count > 0) return true;
 			return false;
 		}
 
 		public bool IsEndpoint(ulong id)
 		{
-			return _endPoints.Contains(id);
+			return EndPoints.Contains(id);
 		}
 
 		public (bool added, ulong id)? GetChanged()

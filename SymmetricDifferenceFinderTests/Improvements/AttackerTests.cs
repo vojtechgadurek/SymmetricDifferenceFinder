@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SymmetricDifferenceFinder.Improvements.Oracles;
+
 
 namespace SymmetricDifferenceFinderTests.Improvements
 {
@@ -14,7 +16,7 @@ namespace SymmetricDifferenceFinderTests.Improvements
 		public void BasicTest()
 		{
 			const ulong size = 10;
-			AttackVectorFinder<NextOracle<NumberStringFactory>> Attacker = new((int)size, [(x) => x % size]);
+			BinPackingAttackFinder<NextOracle<NumberStringFactory>> Attacker = new((int)size, [(x) => x % size]);
 			Attacker.AddNode(1);
 			Assert.Single(Attacker.GetBucket(2));
 

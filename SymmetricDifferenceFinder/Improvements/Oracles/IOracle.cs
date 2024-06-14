@@ -9,5 +9,6 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 	public interface IOracle
 	{
 		ulong[] GetClose(ulong id);
+		int Size();
 	}
 }

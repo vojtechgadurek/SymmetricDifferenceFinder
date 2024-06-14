@@ -12,12 +12,12 @@ namespace SymmetricDifferenceFinder.Combinations
 {
 	public class HashingFunctionCombinations
 	{
-		public static HashingFunctionCombination GetFromSameFamily(int number, IHashingFunctionFamily family)
+		public static HashingFunctionCombination GetFromSameFamily(int number, IHashingFunctionFamily family, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
 		{
 			var answer = new HashingFunctionCombination();
 			for (int i = 0; i < number; i++)
 			{
-				answer.AddHashingFunction((size, offset) => family.GetScheme(size, offset).Create());
+				answer.AddHashingFunction((size, offset) => family.GetScheme(size, offset).Create(), modificators);
 			}
 			return answer;
 		}
@@ -34,6 +34,13 @@ namespace SymmetricDifferenceFinder.Combinations
 				(h) => Utils.HashingFunctionFilter.Filter(h, (3, 29), 0));
 
 			return answer;
+		}
+
+		public static Expression<Func<ulong, ulong>> Quadratic(Expression<Func<ulong, ulong>> hashFunction)
+		{
+			var f = CompiledFunctions.Create<ulong, ulong>(out var input_);
+			f.S.Assign(f.Output, f.S.Function(hashFunction, input_.V * input_.V));
+			return f.Construct();
 		}
 	}
 }

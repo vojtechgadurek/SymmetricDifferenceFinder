@@ -17,6 +17,8 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		//readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>> Decode;
 		readonly public Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int> DecodeWithLimitedNumberOfSteps;
 		readonly public IReadOnlyList<Expression<HashingFunction>> HashingFunctions;
+		readonly public Func<ulong, TSketch, bool> looksPure;
+
 
 		public HyperGraphDecoderFactory(IEnumerable<Expression<HashingFunction>> hashingFunctions, bool allowNegativeCounts = true)
 		{
@@ -31,10 +33,10 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			if (getLookPureMethodInfo is null)
 				throw getLookPureException();
 
-			Expression<Func<ulong, TSketch, bool>> looksPure;
+			Expression<Func<ulong, TSketch, bool>> looksPureEx;
 			try
 			{
-				looksPure =
+				looksPureEx =
 					(Expression<Func<ulong, TSketch, bool>>)getLookPureMethodInfo.Invoke(null, new object[] { hashingFunctions })!;
 			}
 			catch
@@ -48,16 +50,17 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			//	looksPure, decodingMethod
 			//	).Compile();
 			DecodeWithLimitedNumberOfSteps = HyperGraphDecoderMainLoop.GetDecodedLimitedSteps(
-								looksPure, decodingMethod
+								looksPureEx, decodingMethod
 												).Compile();
 			Initialize = DecodingHelperFunctions.GetInitialize(
-				DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPure)
+				DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPureEx)
 				).Compile();
+			looksPure = looksPureEx.Compile();
 		}
 
 		public HyperGraphDecoder<TSketch> Create(TSketch sketch)
 		{
-			return new HyperGraphDecoder<TSketch>(Initialize, DecodeWithLimitedNumberOfSteps, HashingFunctions.Count(), sketch);
+			return new HyperGraphDecoder<TSketch>(Initialize, DecodeWithLimitedNumberOfSteps, looksPure, HashingFunctions.Count(), sketch);
 		}
 
 		IDecoder IDecoderFactory<TSketch>.Create(TSketch sketch)
@@ -74,11 +77,13 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		public List<ulong> AddKeys;
 		public readonly List<ulong> RemoveKeys;
 		HashSet<ulong> _decodedKeys;
+		readonly public Func<ulong, TSketch, bool> LooksPure;
 		int nHashFunctions;
 
 		public HyperGraphDecoder(
 			Action<TSketch, int, ListQueue<ulong>> initialize,
 			Action<TSketch, ListQueue<ulong>, List<ulong>, List<ulong>, int> decode,
+			Func<ulong, TSketch, bool> looksPure,
 			int numberOfHashingFunctions,
 			TSketch sketch)
 		{
@@ -88,6 +93,8 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			AddKeys = new List<ulong>(Sketch.Size());
 			RemoveKeys = new List<ulong>(Sketch.Size());
 			nHashFunctions = numberOfHashingFunctions;
+			LooksPure = looksPure;
+
 		}
 		DecodingState _state = DecodingState.NotStarted;
 		public DecodingState DecodingState => _state;

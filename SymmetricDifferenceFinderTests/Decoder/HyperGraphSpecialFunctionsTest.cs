@@ -54,7 +54,7 @@ namespace SymmetricDifferenceFinderTests.Decoder
 			t.Add(1, 1);
 			FieldContains(1, 1, t, 0, 1);
 
-			f(1, t, p, a, r);
+			f(1, t, p, r, a);
 
 			Assert.Contains(1UL, a);
 
@@ -68,7 +68,7 @@ namespace SymmetricDifferenceFinderTests.Decoder
 
 			FieldContains(-1, 3, t, 0, 3);
 
-			f(3, t, p, a, r);
+			f(3, t, p, r, a);
 
 			Assert.Contains(3UL, r);
 

@@ -79,12 +79,12 @@ namespace SymmetricDifferenceFinder.Tests
 
 			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetNoConflictFactory();
 
-			int size = 1000;
-			var batteryTest = new BatteryTest(0.85, 30, 0.05, size);
+			int size = 10000;
+			var batteryTest = new BatteryTest(0.9, 30, 0.05, size);
 
-			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory>.GetRandomStringData(x, 4).ToArray());
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory>.GetRandomStringData(x, 30).ToArray());
 
-			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 10);
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
 
 			foreach (var x in answer)
 			{
@@ -112,31 +112,67 @@ namespace SymmetricDifferenceFinder.Tests
 		}
 
 
-		public static void TestMassagers()
+		public static IEnumerable<BatteryDecodingResult> TestMassagers(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
 		{
 			var test = Combinations.Combinations.HPW();
-			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, new LinearCongruenceFamily()).GetFactory();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();
 
 
 			var decoderFactory = test.DecoderFactoryFactory;
 			Random random = new Random(2024_1);
 
 
-			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory(
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<KMerStringFactory>(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
-			int size = 100000;
-			var batteryTest = new BatteryTest(1.3, 1.7, 0.01, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => RandomDataFactory.GetRandomStringData(x, 100).ToArray());
+			var batteryTest = new BatteryTest(start, end, step, size);
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, lengthKMer).ToArray());
 
-			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 
-			foreach (var x in answer)
-			{
-				Console.WriteLine(x.ToString());
-			}
+			return answer;
 		}
+
+		public static IEnumerable<BatteryDecodingResult> TestRetrievalIBLT(double start, double end, double step, int testsInBattery, int size, IHashingFunctionFamily hfFamily)
+		{
+			var test = Combinations.Combinations.IBLT();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();
+
+
+			var decoderFactory = test.DecoderFactoryFactory;
+			Random random = new Random(2024_1);
+
+
+			test.SetDecoderFactoryFactory((hfs) =>
+				(HyperGraphDecoderFactory<IBLTTable>)decoderFactory(hfs));
+
+			var batteryTest = new BatteryTest(start, end, step, size);
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, 31).ToArray());
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
+			return answer;
+		}
+
+
+		public static IEnumerable<BatteryDecodingResult> TestRetrieval(double start, double end, double step, int testsInBattery, int size, IHashingFunctionFamily hfFamily)
+		{
+			var test = Combinations.Combinations.HPW();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();
+
+
+			var decoderFactory = test.DecoderFactoryFactory;
+			Random random = new Random(2024_1);
+
+
+			test.SetDecoderFactoryFactory((hfs) =>
+				(HPWDecoderFactory<XORTable>)decoderFactory(hfs));
+
+			var batteryTest = new BatteryTest(start, end, step, size);
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, 31).ToArray());
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
+			return answer;
+		}
+
 
 		public static void TestMassagersConflict()
 		{
@@ -148,7 +184,7 @@ namespace SymmetricDifferenceFinder.Tests
 			Random random = new Random();
 
 
-			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory(
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<NumberStringFactory>(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,9 @@ namespace SymmetricDifferenceFinder.Tables
 	{
 		private IBLTCell[] _table;
 
-		static Func<ulong, ulong> ControlHashingFunction = HashingFunctionProvider.Get(typeof(MultiplyShiftFamily), ulong.MaxValue, 0).Create().Compile();
+		static MD5 mD5 = System.Security.Cryptography.MD5.Create();
+		static Func<ulong, ulong> ControlHashingFunction = x => BitConverter.ToUInt64(mD5.ComputeHash(BitConverter.GetBytes(x))); //x => x * x * 12342834932434242492 & (1 << 31 - 1); //HashingFunctionProvider.Get(typeof(MultiplyShiftFamily), ulong.MaxValue, 0).Create().Compile();
+
 		public IBLTTable(IBLTCell[] table)
 		{
 			_table = table;
@@ -112,6 +115,7 @@ namespace SymmetricDifferenceFinder.Tables
 		{
 			return _table.All(x => 0 == x.Count && 0 == x.HashSum && 0 == x.KeySum);
 		}
+
 
 		public static Expression<Func<ulong, IBLTTable, bool>> GetLooksPure(HashingFunctions hashingFunctions)
 		{
