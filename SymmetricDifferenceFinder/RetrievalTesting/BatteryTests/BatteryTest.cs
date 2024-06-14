@@ -8,7 +8,7 @@ using SymmetricDifferenceFinder.RetrievalTesting.SimpleTests;
 
 namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 {
-	public record class BatteryTest(double StartingMultiplier, double EndingMultiplier, double Step, int Size, long time)
+	public record class BatteryTest(double StartingMultiplier, double EndingMultiplier, double Step, int Size)
 	{
 		public IEnumerable<BatteryDecodingResult> Run(Func<int, DecodingResult> test, int numberOfTestsInBattery)
 		{
@@ -36,7 +36,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 
 				stopwatch.Stop();
 
-				yield return new BatteryDecodingResult(fullness, decodedCorrectly, meanAverageDecoded, s);
+				yield return new BatteryDecodingResult(fullness, decodedCorrectly, meanAverageDecoded, meanTimeElapsed);
 			}
 		}
 	}
