@@ -58,7 +58,7 @@ public class Program
 
 		Write("\\Tests\\KMerRetrieval0mul.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		config = new StringTestConfig(1.1, 1.4, 0.01, 100, 100, 10000, new LinearCongruenceFamily());
+		config = new StringTestConfig(0.8, 1.4, 0.005, 100, 100, 10000, new LinearCongruenceFamily());
 		Write("\\Tests\\KMerRetrieval1lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
 		config = config with { StringLenght = 31 };

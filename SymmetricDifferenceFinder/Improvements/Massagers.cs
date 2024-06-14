@@ -415,7 +415,7 @@ namespace SymmetricDifferenceFinder.Improvements
 
 				if (i == maxRounds - 1)
 				{
-					Console.WriteLine(i);
+					//Console.WriteLine(i);
 				}
 			}
 		}
