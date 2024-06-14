@@ -10,6 +10,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 	(
 		double Fullness,
 		double MeanDecodedCorrectly,
-		double MeanAverageDecoded
+		double MeanAverageDecoded,
+		double MeanMillisecondsElapsed
 	);
 }
