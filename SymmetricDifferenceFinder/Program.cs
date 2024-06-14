@@ -82,9 +82,5 @@ public class Program
 		Write("\\Tests\\BaseRetrievalHPW1mul.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
 		Write("\\Tests\\BaseRetrievalIBLT1mul.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
 
-
-
-
-
 	}
 }
