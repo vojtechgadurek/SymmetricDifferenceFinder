@@ -33,7 +33,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 
 				if (bestResult is null)
 				{
-					bestResult = new BatteryDecodingResult(lowerBound, -1, 0);
+					bestResult = new BatteryDecodingResult(lowerBound, -1, 0, 0);
 				}
 
 				answer.Add(bestResult);
