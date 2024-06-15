@@ -51,7 +51,7 @@ public class Program
 	public static void Main(string[] args)
 	{
 		StringTestConfig config;
-		config = new StringTestConfig(1.5, 2, 0.05, 1, 100, 10000, new LinearCongruenceFamily());
+		config = new StringTestConfig(0.8, 2, 0.05, 1, 40, 10000, new LinearCongruenceFamily());
 
 		Write("\\Tests\\KMerRetrieval9lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 

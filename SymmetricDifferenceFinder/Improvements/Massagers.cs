@@ -308,6 +308,13 @@ namespace SymmetricDifferenceFinder.Improvements
 			}
 		}
 
+		public void FindPure(HashSet<ulong> pure)
+		{
+			for (ulong i = 0; i < (ulong)_size; i++)
+			{
+				pure.Add(i);
+			}
+		}
 		public void ToggleDecodedValues(IEnumerable<ulong> values)
 		{
 			foreach (var value in values)

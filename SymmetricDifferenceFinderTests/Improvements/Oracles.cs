@@ -11,12 +11,18 @@ namespace SymmetricDifferenceFinderTests.Improvements
 
 	public class TestCanonicalOrders
 	{
-		[Fact]
-		void TestCanonicalOrder()
+		[Theory]
+		[InlineData(1)]
+		[InlineData(100)]
+		[InlineData(33333)]
+		[InlineData(1 << 61)]
+
+
+		void TestCanonicalOrder(ulong i)
 		{
 			CanonicalOrder a = default;
-			var res = a.Other(a.Other(1));
-			Assert.Equal(1UL, res);
+			var res = a.Other(a.Other(i));
+			Assert.Equal(i, res);
 		}
 	}
 }
