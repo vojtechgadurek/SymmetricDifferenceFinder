@@ -28,7 +28,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.BatteryTests
 			for (int i = 0; i < numberOfRounds; i++)
 			{
 				double step = (upperBound - lowerBound) / numberOfBuckets;
-				var decodingResults = new BatteryTest(lowerBound, upperBound, step, NumberOfTestsInEachStep).Run(test, numberTestsInBattery);
+				var decodingResults = (IEnumerable<BatteryDecodingResult>)new BatteryTest(lowerBound, upperBound, step, NumberOfTestsInEachStep).Run(test, numberTestsInBattery);
 				var bestResult = decodingResults.Where(x => x.MeanDecodedCorrectly > Precision).MaxBy(x => x.Fullness);
 
 				if (bestResult is null)

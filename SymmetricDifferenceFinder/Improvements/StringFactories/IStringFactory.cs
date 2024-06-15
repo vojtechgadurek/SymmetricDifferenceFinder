@@ -12,5 +12,7 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 		int NPossibleBefore { get; }
 		ulong[] GetPossibleNext(ulong value);
 		ulong[] GetPossibleBefore(ulong value);
+
+		ulong GetRandom();
 	}
 }

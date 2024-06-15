@@ -44,7 +44,7 @@ namespace SymmetricDifferenceFinder.Encoders
 		public Encoder<TTable> Create(TTable table)
 		{
 			if (table.Size() != _configuration.TableSize)
-				throw new ArgumentException($"Table size{table.Size()} does not match configuration {_configuration.TableSize}", nameof(table));
+				throw new ArgumentException($"Table Size{table.Size()} does not match configuration {_configuration.TableSize}", nameof(table));
 			return new Encoder<TTable>(table, _hashToBufferFunctions, _bufferSize);
 		}
 

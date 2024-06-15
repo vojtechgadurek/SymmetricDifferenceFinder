@@ -15,7 +15,7 @@ namespace SymmetricDifferenceFinderTests.Improvements
 		[Fact]
 		public void SimpleTest()
 		{
-			var endpoints = new EndpointsLocalizer<NextOracle<NumberStringFactory>>();
+			var endpoints = new EndpointsLocalizer<NextOracle<NumberStringFactory>, True>();
 			endpoints.AddNode(1);
 			Assert.True(endpoints.IsEndpoint(1));
 			endpoints.AddNode(1);
@@ -46,7 +46,7 @@ namespace SymmetricDifferenceFinderTests.Improvements
 		[Fact]
 		public void SimpleTest2()
 		{
-			var endpoints = new EndpointsLocalizer<NextOracle<KMerStringFactory>>();
+			var endpoints = new EndpointsLocalizer<NextOracle<KMerStringFactory>, True>();
 			endpoints.AddNode(1);
 			Assert.True(endpoints.IsEndpoint(1));
 			endpoints.AddNode(1);

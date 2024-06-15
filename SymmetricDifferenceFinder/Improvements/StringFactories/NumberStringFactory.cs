@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 	{
 		public int NPossibleNext => 1;
 		public int NPossibleBefore => 1;
+
+		static Random _random = new();
 
 		public ulong[] GetPossibleBefore(ulong value)
 		{
@@ -29,6 +32,18 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 				answer = 1;
 			}
 			return [answer];
+		}
+
+		public ulong GetRandom()
+		{
+			ulong value = 0;
+
+			while (value == 0)
+			{
+				value = (ulong)_random.NextInt64();
+			}
+			return value;
+
 		}
 	}
 }

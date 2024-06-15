@@ -103,7 +103,7 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 		public void Decode()
 		{
 			ListQueue<ulong> pure = new ListQueue<ulong>();
-			//This expects decoding is not better than 2 time the size of the sketch
+			//This expects decoding is not better than 2 time the Size of the sketch
 			int numberOfSteps = nHashFunctions * Sketch.Size() * IteratorMultiplicator;
 			_initialize(Sketch, Sketch.Size(), pure);
 			_decode(Sketch, pure, AddKeys, RemoveKeys, numberOfSteps);

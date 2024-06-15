@@ -122,7 +122,7 @@ namespace SymmetricDifferenceFinder.Tests
 			Random random = new Random(2024_1);
 
 
-			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<KMerStringFactory>(
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<KMerStringFactory, CanonicalOrder>(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
@@ -184,7 +184,7 @@ namespace SymmetricDifferenceFinder.Tests
 			Random random = new Random();
 
 
-			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<NumberStringFactory>(
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<NumberStringFactory, CanonicalOrder>(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 

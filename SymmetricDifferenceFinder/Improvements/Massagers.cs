@@ -1,4 +1,6 @@
-﻿using Microsoft.Diagnostics.Tracing.Analysis;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Diagnostics.Tracing.Analysis;
+using Microsoft.Diagnostics.Tracing.Parsers.IIS_Trace;
 using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftAntimalwareEngine;
 using SymmetricDifferenceFinder.Decoders.HPW;
 using SymmetricDifferenceFinder.Improvements.Oracles;
@@ -15,8 +17,9 @@ using static System.Net.Mime.MediaTypeNames;
 namespace SymmetricDifferenceFinder.Improvements
 {
 
-	public class MassagerFactory<TStringFactory> : IDecoderFactory<XORTable>
+	public class MassagerFactory<TStringFactory, TPipeline> : IDecoderFactory<XORTable>
 		where TStringFactory : struct, IStringFactory
+		where TPipeline : struct, IPipeline
 	{
 		HPWDecoderFactory<XORTable> _decoderFactory;
 		IEnumerable<HashingFunction> _hfs;
@@ -27,12 +30,13 @@ namespace SymmetricDifferenceFinder.Improvements
 		}
 		public IDecoder Create(XORTable sketch)
 		{
-			return new Massager<TStringFactory>(_decoderFactory.Create(sketch), _hfs);
+			return new Massager<TStringFactory, TPipeline>(_decoderFactory.Create(sketch), _hfs);
 		}
 	}
 
-	public class Massager<TStringFactory> : IDecoder
+	public class Massager<TStringFactory, TPipeline> : IDecoder
 		where TStringFactory : struct, IStringFactory
+		where TPipeline : struct, IPipeline
 	{
 		HPWDecoder<XORTable> _HPWDecoder;
 		XORTable _table;
@@ -40,15 +44,13 @@ namespace SymmetricDifferenceFinder.Improvements
 		int _size;
 		List<Func<ulong, ulong>> _hfs;
 		HashSet<ulong> _decodedValues;
-		TStringFactory _stringFactory = default;
-		PickOneRandomly<Cache<BeforeOracle<TStringFactory>>> _before = default;
-		PickOneRandomly<Cache<NextOracle<TStringFactory>>> _next = default;
 
-		HyperGraph _hyperGraph;
-		BinPackingAttackFinderToggle<Cache<BeforeOracle<TStringFactory>>> _beforeAtck;
-		BinPackingAttackFinderToggle<Cache<NextOracle<TStringFactory>>> _nextAtck;
-		EndpointsLocalizer<Cache<BeforeOracle<TStringFactory>>> beforeLocalizer = new();
-		EndpointsLocalizer<Cache<NextOracle<TStringFactory>>> nextLocalizer = new();
+		PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = default;
+		PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _next = default;
+
+
+		EndpointsLocalizer<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>, False> beforeLocalizer = new();
+		EndpointsLocalizer<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>, False> nextLocalizer = new();
 
 		public DecodingState DecodingState => _HPWDecoder.DecodingState;
 
@@ -60,34 +62,9 @@ namespace SymmetricDifferenceFinder.Improvements
 
 			_HPWDecoder = HPWDecoder;
 			_decodedValues = _HPWDecoder.GetDecodedValues();
-
-			_hyperGraph = new((ulong)HPWDecoder.Sketch.Size());
-			_beforeAtck = new(_hfs, _hyperGraph);
-			_nextAtck = new(_hfs, _hyperGraph);
 		}
 
 
-		public void BinPackingDecode()
-		{
-
-			for (ulong i = 0; i < (ulong)_HPWDecoder.Sketch.Size(); i += ((ulong)_random.Next(50)))
-			{
-				var attacks = _hyperGraph.GetBucket(i);
-
-				if (attacks.Count == 0) continue;
-				_HPWDecoder.Sketch.Toggle(i, attacks.First());
-				var value = _HPWDecoder.Sketch.Get(i);
-				if (_hfs.Select(f => f(value) == value).Aggregate(false, (x, y) => x || y))
-				{
-					_hfs.ForEach(f => _HPWDecoder.Sketch.Toggle(f(value), value));
-				};
-				_HPWDecoder.Sketch.Toggle(i, attacks.First());
-				var values = _HPWDecoder.GetDecodedValues();
-
-				if (values.Contains(value)) values.Remove(value);
-				else values.Add(value);
-			}
-		}
 
 
 
@@ -338,26 +315,28 @@ namespace SymmetricDifferenceFinder.Improvements
 				if (_decodedValues.Contains(value))
 				{
 					_decodedValues.Remove(value);
-					beforeLocalizer.RemoveNode(value);
-					nextLocalizer.RemoveNode(value);
+					//beforeLocalizer.RemoveNode(value);
+					//nextLocalizer.RemoveNode(value);
 				}
 				else
 				{
 					_decodedValues.Add(value);
-					beforeLocalizer.AddNode(value);
-					nextLocalizer.AddNode(value);
+					//beforeLocalizer.AddNode(value);
+					//nextLocalizer.AddNode(value);
 				}
 			}
 		}
 		public void Decode()
 		{
-			_HPWDecoder.MaxNumberOfIterations = _size / 10;
+			_HPWDecoder.MaxNumberOfIterations = 100;
 			_HPWDecoder.Decode();
-			foreach (var value in _decodedValues)
-			{
-				beforeLocalizer.AddNode(value);
-				nextLocalizer.AddNode(value);
-			};
+			_HPWDecoder.MaxNumberOfIterations = 10;
+
+			//foreach (var value in _decodedValues)
+			//{
+			//	beforeLocalizer.AddNode(value);
+			//	nextLocalizer.AddNode(value);
+			//};
 
 			HashSet<ulong> pure = new HashSet<ulong>();
 			HashSet<ulong> nextPure = new HashSet<ulong>();
@@ -368,7 +347,7 @@ namespace SymmetricDifferenceFinder.Improvements
 			{
 				if (_HPWDecoder.DecodingState == DecodingState.Success)
 				{
-					Console.WriteLine(i);
+					//Console.WriteLine(i);
 					break;
 				}
 				//BinPackingDecode();
@@ -400,17 +379,16 @@ namespace SymmetricDifferenceFinder.Improvements
 				nextPure.Clear();
 
 
-				if (i < maxRounds * 0.8 && _random.NextDouble() <= 0.05 && _HPWDecoder.DecodingState != DecodingState.Success)
+				if (i < maxRounds * 0.8 && _random.NextDouble() <= 0.01 && _HPWDecoder.DecodingState != DecodingState.Success)
 				{
 					Prune(0.1);
-					beforeLocalizer = new();
-					nextLocalizer = new();
-					foreach (var value in _decodedValues)
-					{
-						beforeLocalizer.AddNode(value);
-						nextLocalizer.AddNode(value);
-					};
-
+					//beforeLocalizer = new();
+					//nextLocalizer = new();
+					//foreach (var value in _decodedValues)
+					//{
+					//	beforeLocalizer.AddNode(value);
+					//	nextLocalizer.AddNode(value);
+					//};
 				}
 
 				if (i == maxRounds - 1)

@@ -43,7 +43,7 @@ public class BinPackingAttackFinder<TOracle>
 	where TOracle : struct, IOracle
 {
 	public HyperGraph Attacks;
-	EndpointsLocalizer<TOracle> _endpoints = new EndpointsLocalizer<TOracle>();
+	EndpointsLocalizer<TOracle, True> _endpoints = new EndpointsLocalizer<TOracle, True>();
 	TOracle _oracle = default;
 	List<Func<ulong, ulong>> _hfs;
 
