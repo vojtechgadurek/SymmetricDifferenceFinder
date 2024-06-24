@@ -1,8 +1,11 @@
 ﻿using BenchmarkDotNet.Validators;
+using Iced.Intel;
 using SymmetricDifferenceFinder.Decoders;
 using SymmetricDifferenceFinder.Decoders.Common;
+using SymmetricDifferenceFinder.Decoders.HPW;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
 using System.Linq;
@@ -98,20 +101,83 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.SimpleTests
 			var table = TableFactory();
 			var data = RandomDataFactory(numberItems);
 
-			foreach (var hf in hfs)
+			List<Func<ulong, ulong>> hfsL = hfs.ToList();
+
+			var t = new TabulationFamily();
+			foreach (var hf in hfsL)
 			{
 				foreach (var item in data)
 				{
-					table.Add(hf(item), item);
+					var hash = hf(item);
+					table.Add(hash, item);
 				}
 			}
 
 			var decoder = DecoderFactory.Create(TableToSketch(table));
+			//HPWDecoder<XORTable> decoder = (HPWDecoder<XORTable>)DecoderFactory.Create(TableToSketch(table));
+
+			//bool IsPure(ulong value)
+			//{
+			//	bool check = false;
+			//	var x = decoder.Sketch.Get(value);
+			//	if (x == 0) return false;
+
+			//	foreach (var hf in hfs)
+			//	{
+			//		if (hf(x) == value) return true;
+			//	}
+
+			//	return false;
+
+			//}
+
+
+			//HashSet<ulong> pure = new HashSet<ulong>();
+
+			//foreach (var i in Enumerable.Range(0, decoder.Size))
+			//{
+
+			//	if (IsPure((ulong)i))
+			//	{
+			//		pure.Add((ulong)i);
+			//	}
+			//};
+
+			//HashSet<ulong> nextPure = new HashSet<ulong>();
+			//HashSet<ulong> decodedValues = new();
+
+			//while (pure.Count > 0)
+			//{
+			//	foreach (var p in pure)
+			//	{
+			//		if (IsPure(p))
+			//		{
+			//			var x = decoder.Sketch.Get(p);
+			//			foreach (var hf in hfs)
+			//			{
+			//				decoder.Sketch.Toggle(hf(x), x);
+			//				if (IsPure(hf(x))) nextPure.Add(hf(x));
+			//			}
+
+			//			if (decodedValues.Contains(x))
+			//			{
+			//				decodedValues.Remove(x);
+			//			}
+			//			else
+			//			{
+			//				decodedValues.Add(x);
+			//			}
+			//		}
+			//	}
+			//	HashSet<ulong> oldPure = pure;
+			//	pure = nextPure;
+			//	nextPure = oldPure;
+			//	nextPure.Clear();
+
+			//}
 
 			decoder.Decode();
-
 			var decodedValues = decoder.GetDecodedValues();
-
 
 			decodedValues.SymmetricExceptWith(data);
 

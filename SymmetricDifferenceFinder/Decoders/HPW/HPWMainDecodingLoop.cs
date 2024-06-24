@@ -30,10 +30,13 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 					new Scope()
 						.This(out var S)
 						.AddFinalizer(new Scope().Assign(i_, i_.V + 1))
+						//Pure is the index of possibly pure bucket
 						.DeclareVariable(out var pure_, pures_T[i_.V].V)
+						//Test whether is truly pure
 						.IfThen(!S.Function(LooksPure, pure_.V, sketch_.V),
 							new Scope().GoToEnd(S)
 						)
+						//x is value in the value in pure bucket
 						.DeclareVariable(out var x_, sketch_.V.Call<ulong>("Get", pure_.V))
 						.IfThenElse(
 							answerKeys_SET.Contains(x_.V),

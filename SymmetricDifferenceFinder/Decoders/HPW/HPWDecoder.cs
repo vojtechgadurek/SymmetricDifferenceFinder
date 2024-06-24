@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using LittleSharp.Literals;
 using SymmetricDifferenceFinder.Decoders.Common;
 using SymmetricDifferenceFinder.Tables;
 using HashingFunctions = System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<ulong, ulong>>>;
@@ -53,7 +54,15 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			var addIfLooksPure = DecodingHelperFunctions.GetAddIfLooksPure<HashSet<ulong>, TSketch>(looksPure);
 			var oneDecodeStep = HPWMainDecodingLoop.GetOneDecodingStep(hashingFunctions, toggle, looksPure, addIfLooksPure);
 			OneDecodeStep = oneDecodeStep.Compile();
-			InitDecoding = DecodingHelperFunctions.GetInitialize(addIfLooksPure).Compile();
+			var f = addIfLooksPure.Compile();
+			InitDecoding = (table, size, pure) =>
+			{
+				for (ulong i = 0; i < (ulong)size; i++)
+				{
+					f(i, pure, table);
+				}
+			};
+			//InitDecoding = DecodingHelperFunctions.GetInitialize(addIfLooksPure).Compile();
 		}
 
 		public HPWDecoder<TSketch> Create(TSketch sketch)
@@ -95,7 +104,7 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			Size = sketch.Size();
 			_pureBuffer = new ulong[Size];
 			DecodingState = DecodingState.NotStarted;
-			MaxNumberOfIterations = Size * 4;
+			MaxNumberOfIterations = ((int)Math.Log(Size) * 10) + 16;
 		}
 
 
@@ -108,8 +117,25 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			InitDecoding(Sketch, Size, _pure);
 			_iteration = 0;
 
+
 			while (_iteration < MaxNumberOfIterations)
 			{
+
+				//Console.WriteLine("Start");
+				//foreach (var i in _pure)
+				//{
+				//	Console.WriteLine(i.ToString() + " " + Sketch.Get(i).ToString());
+				//}
+				//Console.WriteLine("Table");
+				//for (int i = 0; i < Size; i++)
+				//{
+				//	Console.WriteLine(i.ToString() + " " + Sketch.Get((ulong)i).ToString());
+				//}
+				//Console.WriteLine("Decoded");
+				//foreach (var d in _decodedValues)
+				//{
+				//	Console.WriteLine(d);
+				//}
 
 
 				OneDecodeStep(_pure.ToArray(), _pure.Count, _pureNext, _decodedValues, Sketch);

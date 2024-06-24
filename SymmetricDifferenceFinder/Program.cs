@@ -50,41 +50,48 @@ public class Program
 
 	public static void Main(string[] args)
 	{
-		StringTestConfig config;
-		config = new StringTestConfig(0.8, 2, 0.05, 1, 40, 10000, new LinearCongruenceFamily());
+		//StringTestConfig config;
+		//config = new StringTestConfig(0.1, 2, 0.05, 1, 40, 10000, new LinearCongruenceFamily() );
+		//config = config with { HfFamily = new TabulationFamily() };
+		//Write("\\Tests\\KMerRetrieval9lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		Write("\\Tests\\KMerRetrieval9lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		//config = new StringTestConfig(0.7, 2, 0.05, 10, 100, 10000, new LinearCongruenceFamily());
+		//Write("\\Tests\\KMerRetrieval0lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		config = new StringTestConfig(0.7, 2, 0.05, 10, 100, 10000, new LinearCongruenceFamily());
-		Write("\\Tests\\KMerRetrieval0lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		//config = config with { HfFamily = new MultiplyShiftFamily() };
 
-		config = config with { HfFamily = new MultiplyShiftFamily() };
+		//Write("\\Tests\\KMerRetrieval0mul.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		Write("\\Tests\\KMerRetrieval0mul.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		//config = new StringTestConfig(0.8, 1.4, 0.005, 100, 100, 10000, new LinearCongruenceFamily());
+		//Write("\\Tests\\KMerRetrieval1lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		config = new StringTestConfig(0.8, 1.4, 0.005, 100, 100, 10000, new LinearCongruenceFamily());
-		Write("\\Tests\\KMerRetrieval1lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		//config = config with { StringLenght = 31 };
+		//Write("\\Tests\\KMerRetrieval2lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		config = config with { StringLenght = 31 };
-		Write("\\Tests\\KMerRetrieval2lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-		config = config with { StringLenght = 10 };
-		Write("\\Tests\\KMerRetrieval3lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-
-		config = config with { StringLenght = 1000 };
-		Write("\\Tests\\KMerRetrieval4lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		//config = config with { StringLenght = 10 };
+		//Write("\\Tests\\KMerRetrieval3lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
 
-		BasicTestConfig confBase = new BasicTestConfig(0.73, 0.85, 0.01, 1000, 10000, new LinearCongruenceFamily());
-		Write("\\Tests\\BaseRetrievalHPW0lin.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
-		Write("\\Tests\\BaseRetrievalIBLT0lin.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+		//config = config with { StringLenght = 1000 };
+		//Write("\\Tests\\KMerRetrieval4lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+
+		BasicTestConfig confBase = new BasicTestConfig(0.72, 0.85, 0.001, 100, 10000, new LinearCongruenceFamily());
+
+		//confBase = confBase with { HfFamily = new TabulationFamily() };
+
+		//Write("\\Tests\\BaseRetrievalHPWlinA.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+
+
+		Write("\\Tests\\BaseRetrievalHPWlin1.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+		Write("\\Tests\\BaseRetrievalIBLTlin1.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
 
 
 
 		confBase = confBase with { HfFamily = new MultiplyShiftFamily() };
-		Write("\\Tests\\BaseRetrievalHPW1mul.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
-		Write("\\Tests\\BaseRetrievalIBLT1mul.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
+		Write("\\Tests\\BaseRetrievalIBLTmul1.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
+		Write("\\Tests\\BaseRetrievalHWPmul1.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+
 
 	}
 }

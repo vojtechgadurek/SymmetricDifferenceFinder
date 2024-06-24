@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using BenchmarkDotNet.Attributes;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Diagnostics.Tracing;
 using SymmetricDifferenceFinder.Improvements;
 using SymmetricDifferenceFinder.RetrievalTesting.BatteryTests;
@@ -112,7 +113,14 @@ namespace SymmetricDifferenceFinder.Tests
 		}
 
 
-		public static IEnumerable<BatteryDecodingResult> TestMassagers(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
+		public static IEnumerable<BatteryDecodingResult> TestMassagers(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily, Type stringFactory, Type pipeline)
+		{
+			return (IEnumerable<BatteryDecodingResult>)typeof(BasicRetrievalTests).GetMethod(nameof(TestMassagersGeneric))!.MakeGenericMethod([stringFactory, pipeline]).Invoke(null, new object[] { start, end, step, testsInBattery, lengthKMer, size, hfFamily })!;
+		}
+
+		public static IEnumerable<BatteryDecodingResult> TestMassagersGeneric<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
+		where TStringFactory : struct, IStringFactory
+		where TPipeline : struct, IPipeline
 		{
 			var test = Combinations.Combinations.HPW();
 			var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();
@@ -122,12 +130,12 @@ namespace SymmetricDifferenceFinder.Tests
 			Random random = new Random(2024_1);
 
 
-			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<KMerStringFactory, CanonicalOrder>(
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<TStringFactory, TPipeline>(
 				hfs,
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
 			var batteryTest = new BatteryTest(start, end, step, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, lengthKMer).ToArray());
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<TStringFactory>.GetRandomStringData(x, lengthKMer).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 

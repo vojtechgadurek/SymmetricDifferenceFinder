@@ -24,6 +24,9 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 			return a.Construct();
 		}
 
+
+
+
 		public static Expression<Action<TSketch, int, TSet>> GetInitialize<TSketch, TSet>(
 			Expression<Action<ulong, TSet, TSketch>> AddIfLooksPure
 		)
@@ -39,5 +42,7 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 				;
 			return a.Construct();
 		}
+
+
 	}
 }

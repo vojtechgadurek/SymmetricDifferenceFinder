@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SymmetricDifferenceFinder.Improvements.Graphs;
 using SymmetricDifferenceFinder.Improvements.Oracles;
 
 namespace SymmetricDifferenceFinder.Improvements.StringFactories
@@ -16,20 +17,33 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 			PickOneRandomly<Cache<NextOracle<TStringFactory>>> stringFactory = default;
 			TStringFactory s = default;
 			HashSet<ulong> data = new HashSet<ulong>();
-			int a = 0;
-			for (int i = 0; i < nItems / stringLength; i++)
+
+
+			var numberOfStrings = nItems / stringLength;
+
+			void CreateString(int length)
 			{
 				ulong value = s.GetRandom();
 				//zero is forbidden value
 				if (value == 0) value++;
-				for (int j = 0; j < stringLength; j++)
+				for (int j = 0; j < length; j++)
 				{
 					value = stringFactory.GetRandom(value);
 					data.Add(value);
-					a++;
 				}
-
 			}
+
+			for (int i = 0; i < numberOfStrings; i++)
+			{
+
+				CreateString(stringLength);
+			}
+
+			if (nItems % stringLength != 0)
+			{
+				CreateString(nItems % stringLength);
+			}
+
 
 			return data;
 		}
