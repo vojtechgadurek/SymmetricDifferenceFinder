@@ -89,21 +89,34 @@ namespace SymmetricDifferenceFinder.Tables
 			f.S
 				.Assign(f.Output, false)
 				.DeclareVariable(out var value_, table_.V.Call<Key>("Get", hash_.V))
+				//.Print("{")
+				//.Print(hash_.V.ToStringExpression())
+				//.Print(value_.V.ToStringExpression())
 				.IfThen(
 					value_.V == 0,
-					new Scope().GoToEnd(f.S)
+					new Scope()
+						//.Print(hash_.V.ToStringExpression())
+						//.Print("Do not look pure ZERO")
+						.GoToEnd(f.S)
 					)
 				;
 
 			foreach (var hashFunc in hashingFunctions)
 			{
-				f.S.Function(hashFunc, value_.V, out var testedHash_)
-					.IfThen(testedHash_ == hash_.V,
+				f.S
+					//.Print(f.S.Function(hashFunc, value_.V).ToStringExpression())
+					.IfThen(f.S.Function(hashFunc, value_.V) == hash_.V,
 						new Scope()
 						.Assign(f.Output, true)
+						//.Print(hash_.V.ToStringExpression())
+						//.Print("LooksPure")
 						.GoToEnd(f.S)
 						);
+
 			}
+			//f.S.Print(hash_.V.ToStringExpression())
+			//.Print("Does not look pure");
+			//.Print("}");
 			return f.Construct();
 		}
 

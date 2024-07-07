@@ -10,7 +10,6 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 
 	public struct CanonicalOrder : IPipeline
 	{
-
 		public ulong Other(ulong value)
 		{
 			ulong newValue = 0;

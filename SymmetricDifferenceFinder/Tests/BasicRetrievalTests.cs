@@ -83,7 +83,7 @@ namespace SymmetricDifferenceFinder.Tests
 			int size = 10000;
 			var batteryTest = new BatteryTest(0.9, 30, 0.05, size);
 
-			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory>.GetRandomStringData(x, 30).ToArray());
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<NumberStringFactory, None>.GetRandomStringData(x, 30).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), 100);
 
@@ -135,7 +135,36 @@ namespace SymmetricDifferenceFinder.Tests
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
 
 			var batteryTest = new BatteryTest(start, end, step, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<TStringFactory>.GetRandomStringData(x, lengthKMer).ToArray());
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<TStringFactory, TPipeline>.GetRandomStringData(x, lengthKMer).ToArray());
+
+			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
+
+			return answer;
+		}
+
+		public static IEnumerable<BatteryDecodingResult> TestMassagersWeaker(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily, Type stringFactory, Type pipeline)
+		{
+			return (IEnumerable<BatteryDecodingResult>)typeof(BasicRetrievalTests).GetMethod(nameof(TestMassagersGeneric))!.MakeGenericMethod([stringFactory, pipeline]).Invoke(null, new object[] { start, end, step, testsInBattery, lengthKMer, size, hfFamily })!;
+		}
+
+		public static IEnumerable<BatteryDecodingResult> TestMassagersGenericWeaker<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
+		where TStringFactory : struct, IStringFactory
+		where TPipeline : struct, IPipeline
+		{
+			var test = Combinations.Combinations.HPW();
+			var hashingFunction = HashingFunctionCombinations.GetFromSameFamilyLastWeaker(4, hfFamily).GetNoConflictFactory();
+
+
+			var decoderFactory = test.DecoderFactoryFactory;
+			Random random = new Random(2024_1);
+
+
+			test.SetDecoderFactoryFactory((hfs) => new MassagerFactory<TStringFactory, TPipeline>(
+				hfs,
+				(HPWDecoderFactory<XORTable>)decoderFactory(hfs)));
+
+			var batteryTest = new BatteryTest(start, end, step, size);
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<TStringFactory, TPipeline>.GetRandomStringData(x, lengthKMer).ToArray());
 
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 
@@ -156,7 +185,7 @@ namespace SymmetricDifferenceFinder.Tests
 				(HyperGraphDecoderFactory<IBLTTable>)decoderFactory(hfs));
 
 			var batteryTest = new BatteryTest(start, end, step, size);
-			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, 31).ToArray());
+			var factory = new RetrievalTestFactory<IBLTTable, IBLTTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory, None>.GetRandomStringData(x, 31).ToArray());
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 			return answer;
 		}
@@ -176,7 +205,7 @@ namespace SymmetricDifferenceFinder.Tests
 				(HPWDecoderFactory<XORTable>)decoderFactory(hfs));
 
 			var batteryTest = new BatteryTest(start, end, step, size);
-			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory>.GetRandomStringData(x, 31).ToArray());
+			var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (int x) => StringDataFactory<KMerStringFactory, None>.GetRandomStringData(x, 31).ToArray());
 			var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 			return answer;
 		}

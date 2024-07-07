@@ -52,8 +52,8 @@ namespace SymmetricDifferenceFinder.Decoders.HyperGraph
 			DecodeWithLimitedNumberOfSteps = HyperGraphDecoderMainLoop.GetDecodedLimitedSteps(
 								looksPureEx, decodingMethod
 												).Compile();
-			Initialize = DecodingHelperFunctions.GetInitialize(
-				DecodingHelperFunctions.GetAddIfLooksPure<ListQueue<ulong>, TSketch>(looksPureEx)
+			Initialize = DecodingHelperFunctions.GetInitialize<TSketch, ListQueue<ulong>>(
+				looksPureEx
 				).Compile();
 			looksPure = looksPureEx.Compile();
 		}

@@ -31,8 +31,18 @@ namespace SymmetricDifferenceFinder.Combinations
 			}
 
 			answer.AddHashingFunction((size, offset) => family.GetScheme(size, offset).Create(),
-				(h) => Utils.HashingFunctionFilter.Filter(h, (3, 29), 0));
+				(h) => Utils.HashingFunctionFilter.Filter(h, (7, 29), 0));
 
+			return answer;
+		}
+
+		public static HashingFunctionCombination GetFromMultipleFamilies(IHashingFunctionFamily[] families, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
+		{
+			var answer = new HashingFunctionCombination();
+			foreach (var family in families)
+			{
+				answer.AddHashingFunction((size, offset) => family.GetScheme(size, offset).Create(), modificators);
+			}
 			return answer;
 		}
 

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using LittleSharp.Literals;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using HashingFunctions = System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<ulong, ulong>>>;
@@ -47,18 +49,17 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 						.Macro(out var _,
 							hashingFunctions
 							.Select(h => S.Function(h, x_.V))
-							.Select(hash => S.Action(Toggle, hash, x_.V, sketch_.V)).ToList()
+							.Select(h => { S.DeclareVariable(out var hash, h); return hash; })
+							.Select(hash =>
+							{
+								S.Action(Toggle, hash.V, x_.V, sketch_.V);
+								S.IfThen(/*S.Function(LooksPure, hash.V, sketch_.V) == */true,
+									new Scope().AddExpression(nextStepPures_.V.Call<NoneType>("Add", hash.V)));
+								return 0;
+							}
+							).ToList()
 							)
-						//Add if hashes look pure for next round
-						.Macro(out var _,
-							hashingFunctions
-								.Select(h => S.Function(h, x_.V))
-								.Select(v => S.Action(AddIfLooksPure, v, nextStepPures_.V, sketch_.V)).ToList()
-						//This is extremely cursed
-						//Actions are added to expression list, thus by explicitly calling .ToList()
-						// we are adding these expression into S scope
-						)
-
+					//Add if hashes look pure for next round
 
 					);
 			return f.Construct();

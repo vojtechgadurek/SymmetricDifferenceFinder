@@ -17,10 +17,12 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 			where TSketch : ISketch<TSketch>
 		{
 			var a = CompiledActions.Create<ulong, TSet, TSketch>(out var hash_, out var set_, out var table_);
-			a.S
-				.Function(looksPure, hash_.V, table_.V, out var check)
-				.IfThen(check, new Scope().AddExpression(set_.V.Call<NoneType>("Add", hash_.V)))
-				;
+			a.S//.Print("Start->")
+					.Function(looksPure, hash_.V, table_.V, out var check)
+					.Print(check.ToStringExpression())
+					//.Print("<-End")
+					.IfThen(check, new Scope().AddExpression(set_.V.Call<NoneType>("Add", hash_.V)))
+					;
 			return a.Construct();
 		}
 
@@ -28,7 +30,7 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 
 
 		public static Expression<Action<TSketch, int, TSet>> GetInitialize<TSketch, TSet>(
-			Expression<Action<ulong, TSet, TSketch>> AddIfLooksPure
+			Expression<Func<ulong, TSketch, bool>> looksPure
 		)
 			where TSketch : ISketch<TSketch>
 		{
@@ -36,8 +38,12 @@ namespace SymmetricDifferenceFinder.Decoders.Common
 			a.S.DeclareVariable<ulong>(out var i_, 0)
 				.While(
 					i_.V < size_.V.Convert<ulong>(),
-					new Scope()
-						.Action(AddIfLooksPure, i_.V, set_.V, table_.V)
+					new Scope()//.Print("Start->")
+						.Function(looksPure, i_.V, table_.V, out var check)
+						.IfThen(check, new Scope().AddExpression(set_.V.Call<NoneType>("Add", i_.V)))
+						//.Print("<-End")
+
+						//.Print(i_.V.ToStringExpression())
 						.Assign(i_, i_.V + 1))
 				;
 			return a.Construct();

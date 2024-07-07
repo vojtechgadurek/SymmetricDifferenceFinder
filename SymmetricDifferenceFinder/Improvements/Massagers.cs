@@ -354,7 +354,7 @@ namespace SymmetricDifferenceFinder.Improvements
 			{
 				if (_HPWDecoder.DecodingState == DecodingState.Success)
 				{
-					//Console.WriteLine(i);
+					Console.WriteLine(i);
 					break;
 				}
 				//BinPackingDecode();

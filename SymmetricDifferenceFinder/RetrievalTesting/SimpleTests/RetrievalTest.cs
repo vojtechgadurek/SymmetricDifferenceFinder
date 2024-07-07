@@ -103,7 +103,6 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.SimpleTests
 
 			List<Func<ulong, ulong>> hfsL = hfs.ToList();
 
-			var t = new TabulationFamily();
 			foreach (var hf in hfsL)
 			{
 				foreach (var item in data)
@@ -184,7 +183,7 @@ namespace SymmetricDifferenceFinder.RetrievalTesting.SimpleTests
 			return new DecodingResult(data.Length, numberItems, decoder.DecodingState, decodedValues.Count);
 		}
 	}
-
-
-
 }
+
+
+

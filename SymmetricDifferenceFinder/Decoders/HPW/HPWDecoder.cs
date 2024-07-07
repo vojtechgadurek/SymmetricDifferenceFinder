@@ -55,14 +55,14 @@ namespace SymmetricDifferenceFinder.Decoders.HPW
 			var oneDecodeStep = HPWMainDecodingLoop.GetOneDecodingStep(hashingFunctions, toggle, looksPure, addIfLooksPure);
 			OneDecodeStep = oneDecodeStep.Compile();
 			var f = addIfLooksPure.Compile();
-			InitDecoding = (table, size, pure) =>
-			{
-				for (ulong i = 0; i < (ulong)size; i++)
-				{
-					f(i, pure, table);
-				}
-			};
-			//InitDecoding = DecodingHelperFunctions.GetInitialize(addIfLooksPure).Compile();
+			//InitDecoding = (table, size, pure) =>
+			//{
+			//	for (ulong i = 0; i < (ulong)size; i++)
+			//	{
+			//		f(i, pure, table);
+			//	}
+			//};
+			InitDecoding = DecodingHelperFunctions.GetInitialize<TSketch, HashSet<ulong>>(looksPure).Compile();
 		}
 
 		public HPWDecoder<TSketch> Create(TSketch sketch)

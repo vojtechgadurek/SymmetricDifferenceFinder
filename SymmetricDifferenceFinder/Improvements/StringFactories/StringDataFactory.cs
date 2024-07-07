@@ -8,8 +8,9 @@ using SymmetricDifferenceFinder.Improvements.Oracles;
 
 namespace SymmetricDifferenceFinder.Improvements.StringFactories
 {
-	public static class StringDataFactory<TStringFactory>
+	public static class StringDataFactory<TStringFactory, TPipeline>
 			where TStringFactory : struct, IStringFactory
+			where TPipeline : struct, IPipeline
 	{
 		public static HashSet<ulong> GetRandomStringData(int nItems, int stringLength)
 		{
@@ -44,7 +45,7 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 				CreateString(nItems % stringLength);
 			}
 
-
+			data = data.Select(x => new TPipeline().Modify(x)).ToHashSet();
 			return data;
 		}
 	}
