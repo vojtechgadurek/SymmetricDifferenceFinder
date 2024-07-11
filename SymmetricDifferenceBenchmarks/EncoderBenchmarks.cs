@@ -112,14 +112,17 @@ namespace SymmetricDifferenceFinderBenchmarks
 			[Benchmark]
 			public object ParallelEncode()
 			{
-				var encoder =
-					new Encoder<XORTable>(
-						new XORTable((int)TableSize),
-						HashingFunctionCombinations
+				var hfs = HashingFunctionCombinations
 						.GetFromSameFamily(3, new MultiplyShiftFamily())
 						.GetNoConflictFactory()((int)TableSize)
-						.Select(h => LittleSharp.Utils.Buffering.BufferFunction(h).Compile()),
+						.Select(h => LittleSharp.Utils.Buffering.BufferFunction(h).Compile()).ToList();
+
+				var GetEncoder = () =>
+					new Encoder<XORTable>(
+						new XORTable((int)TableSize),
+						hfs,
 						1024);
+
 
 				string fastaFilePath = "test.test";
 
@@ -129,11 +132,13 @@ namespace SymmetricDifferenceFinderBenchmarks
 				var buffer = new ulong[1024 * 1024];
 				var CreateTask = () => new Task(() =>
 				{
+					var encoder = GetEncoder();
 					while (true)
 					{
+						FastaFileReader.Buffer? data;
 						lock (reader)
 						{
-							var data = reader.BorrowBuffer();
+							data = reader.BorrowBuffer();
 						}
 						if (data is null)
 						{
