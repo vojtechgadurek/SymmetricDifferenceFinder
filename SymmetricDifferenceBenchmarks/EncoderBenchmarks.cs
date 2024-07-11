@@ -130,7 +130,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 				var reader = new FastaFileReader(config.kMerSize, config.nCharsInFile, config.textReader);
 
 				var buffer = new ulong[1024 * 1024];
-				var CreateTask = () => new Task(() =>
+				var CreateTask = () => new Task<XORTable>(() =>
 				{
 					var encoder = GetEncoder();
 					while (true)
@@ -147,15 +147,16 @@ namespace SymmetricDifferenceFinderBenchmarks
 						encoder.Encode(data.Data, data.Size);
 						reader.RecycleBuffer(data);
 					}
+					return encoder.GetTable();
 				});
 
-				Task[] tasks = Enumerable.Range(0, 4).Select(_ => CreateTask()).ToArray();
+				var tasks = Enumerable.Range(0, 4).Select(_ => CreateTask()).ToArray();
 				foreach (var task in tasks)
 				{
 					task.Start();
 				}
 				Task.WaitAll(tasks.ToArray());
-				return encoder.GetTable();
+				return tasks.Aggregate(new XORTable((int)TableSize), (t, x) => x.Result.SymmetricDifference(t));
 			}
 
 			[GlobalCleanup]
