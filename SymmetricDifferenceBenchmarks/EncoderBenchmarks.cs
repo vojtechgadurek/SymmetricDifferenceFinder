@@ -18,8 +18,7 @@ namespace SymmetricDifferenceFinderBenchmarks
 
 			[ParamsSource(nameof(HashingFunctionsToTest))]
 			public Type hashingFunctionFamily;
-
-			public static IEnumerable<Type> HashingFunctionsToTest() => HashingFunctionProvider.GetAllHashingFunctionFamilies();
+			public static IEnumerable<Type> HashingFunctionsToTest() => [typeof(MultiplyShiftFamily)];
 
 			public const int Length = 1024;
 			public const int BufferLength = 4096;
@@ -132,7 +131,10 @@ namespace SymmetricDifferenceFinderBenchmarks
 				{
 					while (true)
 					{
-						var data = reader.BorrowBuffer();
+						lock (reader)
+						{
+							var data = reader.BorrowBuffer();
+						}
 						if (data is null)
 						{
 							break;
