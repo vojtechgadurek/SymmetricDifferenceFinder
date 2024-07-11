@@ -10,7 +10,7 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 		where TOracle : struct, IOracle
 	{
 		static Random _random = new Random();
-		TOracle oracle = default;
+		TOracle oracle = new();
 
 		public PickOneRandomly()
 		{

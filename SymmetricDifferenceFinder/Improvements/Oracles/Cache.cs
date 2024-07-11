@@ -12,8 +12,8 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 	public struct Cache<TOracle> : IOracle
 		where TOracle : struct, IOracle
 	{
-		static ThreadLocal<Dictionary<ulong, ulong[]>> _dic = new(() => new());
-		static TOracle _oracle = default;
+		Dictionary<ulong, ulong[]> _dic = new();
+		static TOracle _oracle = new();
 		//static ThreadLocal<LimitedSizeDic<ulong[]>> _dic = new(() => new());
 
 
@@ -23,10 +23,10 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 
 		public ulong[] GetClose(ulong id)
 		{
-			if (!_dic.Value.TryGetValue(id, out ulong[]? answer))
+			if (!_dic.TryGetValue(id, out ulong[]? answer))
 			{
 				answer = _oracle.GetClose(id);
-				_dic.Value.Add(id, answer);
+				_dic.Add(id, answer);
 			};
 
 			//var answer = _dic.Value.GetValue(id);
@@ -35,6 +35,8 @@ namespace SymmetricDifferenceFinder.Improvements.Oracles
 			//_dic.Value.SetValue(id, answer);
 			return answer;
 		}
+
+
 		public int Size()
 		{
 			return _oracle.Size();

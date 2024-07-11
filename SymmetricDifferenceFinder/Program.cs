@@ -72,40 +72,64 @@ public class Program
 
 		//Write("\\Tests\\KMerRetrieval1LinNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		//config = config with { HfFamily = new TabulationFamily() };
-		//config = config with { pipeline = typeof(None), TestsInBattery = 40, Start = 1.2, End = 1.4, Step = 0.01, StringLenght = 5 };
+		config = config with { HfFamily = new TabulationFamily() };
+		config = config with { pipeline = typeof(CanonicalOrder), TestsInBattery = 40, Start = 1.3, End = 1.6, Step = 0.01, StringLenght = 5 };
 
-		//config = config with { StringLenght = 5 };
-		//Write("\\Tests\\KMerRetrieval5tab.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		config = config with { StringLenght = 5 };
+		Write("\\Tests\\KMerRetrieval5tab1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		//config = config with { StringLenght = 10 };
-		//Write("\\Tests\\KMerRetrieval10tab.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		config = config with { StringLenght = 10 };
+		Write("\\Tests\\KMerRetrieval10tab1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		//config = config with { StringLenght = 100 };
-		//Write("\\Tests\\KMerRetrieval100tab.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-
-		//config = config with { StringLenght = 1000 };
-		//Write("\\Tests\\KMerRetrieval1000tab.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-		//config = config with { StringLenght = 10000 };
-		//Write("\\Tests\\KMerRetrieval10000tab.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-		//config = config with { StringLenght = 5 };
-		//Write("\\Tests\\KMerRetrieval5tabNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-		//config = config with { StringLenght = 10 };
-		//Write("\\Tests\\KMerRetrieval10tabNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
-
-		//config = config with { StringLenght = 100 };
-		//Write("\\Tests\\KMerRetrieval100tabNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		config = config with { StringLenght = 100 };
+		Write("\\Tests\\KMerRetrieval100tab1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
 
-		//config = config with { StringLenght = 1000 };
-		//Write("\\Tests\\KMerRetrieval1000tabNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		config = config with { StringLenght = 1000 };
+		Write("\\Tests\\KMerRetrieval1000tab1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-		//config = config with { StringLenght = 10000 };
-		//Write("\\Tests\\KMerRetrieval10000tabNone.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+		config = config with { StringLenght = 10000 };
+		Write("\\Tests\\KMerRetrieval10000tab1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+
+		config = config with { HfFamily = new LinearCongruenceFamily() };
+
+		config = config with { StringLenght = 5 };
+		Write("\\Tests\\KMerRetrieval5lin1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 10 };
+		Write("\\Tests\\KMerRetrieval10lin1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 100 };
+		Write("\\Tests\\KMerRetrieval100lin1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+
+		config = config with { StringLenght = 1000 };
+		Write("\\Tests\\KMerRetrieval1000lin1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 10000 };
+		Write("\\Tests\\KMerRetrieval10000lin1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+
+		config = config with { pipeline = typeof(None) };
+		config = config with { HfFamily = new TabulationFamily() };
+
+
+		config = config with { StringLenght = 5 };
+		Write("\\Tests\\KMerRetrieval5tabNone1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 10 };
+		Write("\\Tests\\KMerRetrieval10tabNone1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 100 };
+		Write("\\Tests\\KMerRetrieval100tabNone1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+
+		config = config with { StringLenght = 1000 };
+		Write("\\Tests\\KMerRetrieval1000tabNone1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+
+		config = config with { StringLenght = 10000 };
+		Write("\\Tests\\KMerRetrieval10000tabNone1.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
 
 
@@ -126,8 +150,8 @@ public class Program
 		//confBase = confBase with { HfFamily = new TabulationFamily(), Start = 0.1, Step = 0.1, TestsInBattery = 1 };
 
 
-		////Warm up
-		//	Write("\\Tests\\WARMUP.txt", (confBase with { End = 0.73 }).Run(Tests.BasicRetrievalTests.TestRetrieval));
+		//////Warm up
+		////	Write("\\Tests\\WARMUP.txt", (confBase with { End = 0.73 }).Run(Tests.BasicRetrievalTests.TestRetrieval));
 
 
 
@@ -136,13 +160,13 @@ public class Program
 
 
 
-		//confBase = confBase with { HfFamily = new MultiplyShiftFamily() };
-		//Write("\\Tests\\BaseRetrievalIBLTmul3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
-		//Write("\\Tests\\BaseRetrievalHWPmul3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+		////confBase = confBase with { HfFamily = new MultiplyShiftFamily() };
+		////Write("\\Tests\\BaseRetrievalIBLTmul3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
+		////Write("\\Tests\\BaseRetrievalHWPmul3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
 
-		confBase = confBase with { HfFamily = new LinearCongruenceFamily() };
-		Write("\\Tests\\BaseRetrievalIBLTlin3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
-		Write("\\Tests\\BaseRetrievalHWPlin3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
+		//confBase = confBase with { HfFamily = new LinearCongruenceFamily() };
+		//Write("\\Tests\\BaseRetrievalIBLTlin3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrievalIBLT));
+		//Write("\\Tests\\BaseRetrievalHWPlin3.txt", confBase.Run(Tests.BasicRetrievalTests.TestRetrieval));
 
 		//confBase = confBase with { HfFamily = new TabulationFamily() };
 

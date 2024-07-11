@@ -45,12 +45,8 @@ namespace SymmetricDifferenceFinder.Improvements
 		List<Func<ulong, ulong>> _hfs;
 		HashSet<ulong> _decodedValues;
 
-		PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = default;
-		PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _next = default;
-
-
-		EndpointsLocalizer<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>, False> beforeLocalizer = new();
-		EndpointsLocalizer<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>, False> nextLocalizer = new();
+		PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = new();
+		PickOneRandomly<Cache<Pipeline<NextOracle<TStringFactory>, TPipeline>>> _next = new();
 
 		public DecodingState DecodingState => _HPWDecoder.DecodingState;
 
@@ -139,20 +135,6 @@ namespace SymmetricDifferenceFinder.Improvements
 		}
 
 
-		List<ulong> GetCloseToEndpoints(double probability)
-		{
-			List<ulong> values = new();
-			foreach (var value in beforeLocalizer.EndPoints)
-			{
-				values.Add(_before.GetRandom(value));
-			}
-			foreach (var value in nextLocalizer.EndPoints)
-			{
-				values.Add(_next.GetRandom(value));
-			}
-			return values.Where(_ => _random.NextDouble() > probability).ToList();
-		}
-
 
 		List<ulong> GetCloseToDecoded(double probability)
 		{
@@ -167,147 +149,6 @@ namespace SymmetricDifferenceFinder.Improvements
 			}
 			return values.Where(_ => _random.NextDouble() > probability).ToList();
 		}
-
-
-		void ToggleValues(HashSet<ulong> possiblePures, HashSet<ulong> nextPures, List<ulong> values)
-		{
-			foreach (var hf in _hfs)
-			{
-				foreach (var value in values)
-				{
-					var hash = hf(value);
-					_table.Toggle(hash, value);
-					possiblePures.Add(hash);
-				}
-			}
-
-			HashSet<ulong> newlyDecodedValues = new();
-			_HPWDecoder.OuterDecode(possiblePures, nextPures, newlyDecodedValues);
-
-			foreach (var value in newlyDecodedValues)
-			{
-				if (_decodedValues.Contains(value))
-				{
-					_decodedValues.Remove(value);
-
-					nextLocalizer.RemoveNode(value);
-					beforeLocalizer.RemoveNode(value);
-				}
-				else
-				{
-					_decodedValues.Add(value);
-					nextLocalizer.AddNode(value);
-					beforeLocalizer.AddNode(value);
-
-				}
-			}
-			newlyDecodedValues.Clear();
-		}
-		public void RandomAttackDecode(bool probe)
-		{
-
-			int nMassages = _size / 100;
-			_HPWDecoder.MaxNumberOfIterations = 10;
-			int count = 0;
-
-
-			var possiblePures = new HashSet<ulong>();
-			var nextPures = new HashSet<ulong>();
-
-
-			while (nMassages > count)
-			{
-				//var pickedValues = valuesPossibleToPick.Where(_ => _random.Next(2) < 1);
-				//var pickedValues = Enumerable.Range(0, _size).Select(i => _hyperGraph.GetBucket((ulong)i).FirstOrDefault()).Where(x => x != default);
-				//Console.WriteLine(_HPWDecoder.GetDecodedValues().Count);
-				List<ulong> values = new();
-				//foreach (var value in pickedValues)
-				//{
-				//	var next = _next.GetRandom(value);
-				//	var before = _before.GetRandom(value);
-
-				//	bool nextIsDecoded = _decodedValues.Contains(next);
-				//	bool beforeIsDecoded = _decodedValues.Contains(before);
-
-				//	if (nextIsDecoded == false) values.Add(next);
-				//	if (beforeIsDecoded == false) values.Add(before);
-
-				//	//if (nextIsDecoded == true && beforeIsDecoded == true) valuesPossibleToPick.Remove(next);
-				//}
-
-				foreach (var value in beforeLocalizer.EndPoints)
-				{
-					values.Add(_before.GetRandom(value));
-				}
-				foreach (var value in nextLocalizer.EndPoints)
-				{
-					values.Add(_next.GetRandom(value));
-				}
-
-
-				values = values.Where(_ => _random.NextDouble() > 0.5).ToList();
-
-				List<ulong> valuesNext = new();
-				foreach (var value in values)
-				{
-					valuesNext.Add(_before.GetRandom(value));
-				}
-				foreach (var value in values)
-				{
-					valuesNext.Add(_next.GetRandom(value));
-				}
-
-
-				values = values.Concat(valuesNext).Concat(nextLocalizer.EndPoints).Concat(beforeLocalizer.EndPoints).ToList();
-
-
-
-				//There are two for reason
-				//We add some values in the first
-				//that are removed in the second
-
-				ToggleValues(possiblePures, nextPures, values);
-				possiblePures = nextPures;
-				nextPures = new HashSet<ulong>();
-
-				ToggleValues(possiblePures, nextPures, values);
-
-				possiblePures = nextPures;
-				nextPures = new HashSet<ulong>();
-
-				if (_HPWDecoder.DecodingState == DecodingState.Success)
-				{
-					break;
-				}
-
-				count++;
-
-				if (count % 100 == 0 && probe)
-				{
-					ToggleValues(new(), new(), _decodedValues.Where(_ => _random.Next(10) == 0).ToList());
-				}
-
-				if (count % 100 == 0)
-				{
-
-					//Console.WriteLine($"{beforeLocalizer.EndPoints.Count()} {nextLocalizer.EndPoints.Count()}");
-
-					//Console.WriteLine(beforeLocalizer.Nodes.Where(x => x.Value.IsEndpoint()).Count());
-
-					beforeLocalizer = new();
-					nextLocalizer = new();
-					foreach (var value in _decodedValues)
-					{
-						beforeLocalizer.AddNode(value);
-						nextLocalizer.AddNode(value);
-					}
-					//Console.WriteLine($"{beforeLocalizer.EndPoints.Count()} {nextLocalizer.EndPoints.Count()}");
-					//Console.WriteLine($"{count} {values.Count()} {_decodedValues.Count}");
-					//Console.WriteLine($"{_count} {valuesPossibleToPick.Count} {_decodedValues.Count}");
-				}
-			}
-		}
-
 		public void FindPure(HashSet<ulong> pure)
 		{
 			for (ulong i = 0; i < (ulong)_size; i++)
@@ -338,7 +179,6 @@ namespace SymmetricDifferenceFinder.Improvements
 			_HPWDecoder.MaxNumberOfIterations = 100;
 			_HPWDecoder.Decode();
 			_HPWDecoder.MaxNumberOfIterations = 10;
-
 			//foreach (var value in _decodedValues)
 			//{
 			//	beforeLocalizer.AddNode(value);
@@ -360,14 +200,7 @@ namespace SymmetricDifferenceFinder.Improvements
 				//BinPackingDecode();
 
 				List<ulong> values;
-				if (i % 7 < 0)
-				{
-					values = GetCloseToEndpoints(0.5);
-				}
-				else
-				{
-					values = GetCloseToDecoded(0.5);
-				}
+				values = GetCloseToDecoded(0.5);
 
 				ToggleValues(pure, values);
 

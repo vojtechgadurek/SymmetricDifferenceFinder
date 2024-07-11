@@ -15,8 +15,8 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 		public static HashSet<ulong> GetRandomStringData(int nItems, int stringLength)
 		{
 			Random random = new Random();
-			PickOneRandomly<Cache<NextOracle<TStringFactory>>> stringFactory = default;
-			TStringFactory s = default;
+			PickOneRandomly<Cache<NextOracle<TStringFactory>>> stringFactory = new();
+			TStringFactory s = new();
 			HashSet<ulong> data = new HashSet<ulong>();
 
 

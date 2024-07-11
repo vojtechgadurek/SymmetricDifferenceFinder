@@ -111,98 +111,44 @@ namespace SymmetricDifferenceFinderBenchmarks
 			}
 
 			[Benchmark]
-			public ulong[] ParalelEncode()
-			{
-				var encoder =
-					new NoConflictEncoder<XORTable>(
-						new XORTable((int)TableSize),
-						HashingFunctionCombinations
-						.GetFromSameFamily(3, new MultiplyShiftFamily())
-						.GetNoConflictFactory()((int)TableSize)
-						.Select(h => LittleSharp.Utils.Buffering.BufferFunction(h).Compile()),
-						1024);
-
-				string fastaFilePath = "test.test";
-
-				var config = FastaFile.Open(new StreamReader(fastaFilePath));
-				var reader = new FastaFileReader(config.kMerSize, config.nCharsInFile, config.textReader);
-
-				var buffer = new ulong[1024 * 1024];
-				while (true)
-				{
-					var data = reader.BorrowBuffer();
-					if (data is null)
-					{
-						break;
-					}
-					encoder.EncodeParallel(buffer, data.Size);
-					reader.RecycleBuffer(data);
-				}
-				return encoder.GetTable().GetUnderlyingTable();
-			}
-
-			[Benchmark]
-			public ulong[] NonParralelEncode()
+			public object ParallelEncode()
 			{
 				var encoder =
 					new Encoder<XORTable>(
 						new XORTable((int)TableSize),
 						HashingFunctionCombinations
 						.GetFromSameFamily(3, new MultiplyShiftFamily())
-						.GetFactory()((int)TableSize)
-						.Select(h => LittleSharp.Utils.Buffering.BufferFunction(h).Compile()),
-						1024);
-
-				string fastaFilePath = "test.test";
-
-				var config = FastaFile.Open(new StreamReader(fastaFilePath));
-				var reader = new FastaFileReader(config.kMerSize, config.nCharsInFile, config.textReader);
-
-				var buffer = new ulong[1024 * 1024];
-				while (true)
-				{
-					var data = reader.BorrowBuffer();
-					if (data is null)
-					{
-						break;
-					}
-					encoder.Encode(buffer, data.Size);
-					reader.RecycleBuffer(data);
-				}
-				return encoder.GetTable().GetUnderlyingTable();
-			}
-
-			[Benchmark]
-			public ulong[] BenchmarkDecoder3()
-			{
-				var encoder =
-					new NoConflictEncoder<XORTable>(
-						new XORTable((int)TableSize),
-						HashingFunctionCombinations
-						.GetFromSameFamily(3, new MultiplyShiftFamily())
 						.GetNoConflictFactory()((int)TableSize)
 						.Select(h => LittleSharp.Utils.Buffering.BufferFunction(h).Compile()),
 						1024);
 
-
-
 				string fastaFilePath = "test.test";
 
 				var config = FastaFile.Open(new StreamReader(fastaFilePath));
 				var reader = new FastaFileReader(config.kMerSize, config.nCharsInFile, config.textReader);
 
 				var buffer = new ulong[1024 * 1024];
-				while (true)
+				var CreateTask = () => new Task(() =>
 				{
-					var data = reader.BorrowBuffer();
-					if (data is null)
+					while (true)
 					{
-						break;
+						var data = reader.BorrowBuffer();
+						if (data is null)
+						{
+							break;
+						}
+						encoder.Encode(data.Data, data.Size);
+						reader.RecycleBuffer(data);
 					}
-					encoder.EncodeParallel(buffer, data.Size);
-					reader.RecycleBuffer(data);
+				});
+
+				Task[] tasks = Enumerable.Range(0, 4).Select(_ => CreateTask()).ToArray();
+				foreach (var task in tasks)
+				{
+					task.Start();
 				}
-				return encoder.GetTable().GetUnderlyingTable();
+				Task.WaitAll(tasks.ToArray());
+				return encoder.GetTable();
 			}
 
 			[GlobalCleanup]
