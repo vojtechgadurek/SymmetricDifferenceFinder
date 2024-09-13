@@ -48,7 +48,7 @@ namespace SymmetricDifferenceFinder.Improvements.Graphs
 			public static Node NewInactiveNode(ulong id) => new Node(id, 0, 0);
 
 		}
-		TOracle _oracle = default;
+		TOracle _oracle = new();
 		public Dictionary<ulong, Node> Nodes = new Dictionary<ulong, Node>();
 		public readonly HashSet<ulong> EndPoints = new HashSet<ulong>();
 		List<(bool added, ulong id)> _changes = new();

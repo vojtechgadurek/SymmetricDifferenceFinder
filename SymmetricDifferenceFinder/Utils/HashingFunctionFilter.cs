@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinder.Utils
 {
-	public static class HashingFunctionFilter
-	{
-		public static Expression<HashingFunction> Filter(Expression<HashingFunction> hf, (ulong use, ulong notUse) ratio, ulong valueWhenNotUse)
-		{
-			var f = CompiledFunctions.Create<ulong, ulong>(out var value_);
-			f.S.Assign(f.Output, valueWhenNotUse)
-				.DeclareVariable(out var hash_, f.S.Function(hf, value_.V))
-				.Macro(out var test_, hash_.V % (ratio.use + ratio.notUse))
-				.IfThen(test_ < ratio.use, new Scope().Assign(f.Output, f.S.Function(hf, hash_.V)))
-				;
-			return f.Construct();
-		}
-	}
+    public static class HashingFunctionFilter
+    {
+        public static Expression<HashingFunction> Filter(Expression<HashingFunction> hf, (ulong use, ulong notUse) ratio, ulong valueWhenNotUse)
+        {
+            var f = CompiledFunctions.Create<ulong, ulong>(out var value_);
+            f.S.Assign(f.Output, valueWhenNotUse)
+                .DeclareVariable(out var hash_, f.S.Function(hf, value_.V))
+                .Macro(out var test_, hash_.V % (ratio.use + ratio.notUse))
+                .IfThen(test_ < ratio.use, new Scope().Assign(f.Output, f.S.Function(hf, hash_.V)))
+                ;
+            return f.Construct();
+        }
+    }
 }

@@ -8,38 +8,38 @@ namespace SymmetricDifferenceFinder.Improvements.Graphs
 {
 	public class HyperGraph
 	{
-		HashSet<ulong>[] _attacks;
+		HashSet<ulong>[] _edges;
 
 		public HyperGraph(ulong size)
 		{
-			_attacks = new HashSet<ulong>[size];
-			for (int i = 0; i < _attacks.Length; i++)
+			_edges = new HashSet<ulong>[size];
+			for (int i = 0; i < _edges.Length; i++)
 			{
-				_attacks[i] = new HashSet<ulong>();
+				_edges[i] = new HashSet<ulong>();
 			}
 		}
 
-		public void AddEdge(ulong id, ulong[] edges)
+		public void AddEdge(ulong id, ulong[] edge)
 		{
-			foreach (var edge in edges)
+			foreach (var vertex in edge)
 			{
-				if (!_attacks[edge].Contains(id))
-					_attacks[edge].Add(id);
+				if (!_edges[vertex].Contains(id))
+					_edges[vertex].Add(id);
 			}
 		}
 
-		public void RemoveEdge(ulong ID, ulong[] edges)
+		public void RemoveEdge(ulong id, ulong[] edge)
 		{
-			foreach (var edge in edges)
+			foreach (var vertex in edge)
 			{
-				if (_attacks[edge].Contains(ID))
-					_attacks[edge].Remove(ID);
+				if (_edges[vertex].Contains(id))
+					_edges[vertex].Remove(id);
 			}
 		}
 
 		public HashSet<ulong> GetBucket(ulong id)
 		{
-			return _attacks[id];
+			return _edges[id];
 		}
 	}
 }
