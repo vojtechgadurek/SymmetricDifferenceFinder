@@ -38,31 +38,41 @@ namespace SymmetricDifferenceFinder.Improvements
         where TStringFactory : struct, IStringFactory
         where TPipeline : struct, IPipeline
     {
-        HPWDecoder<XORTable> _HPWDecoder;
-        XORTable _table;
-        Random _random = new Random();
-        int _size;
-        List<Func<ulong, ulong>> _hfs;
-        HashSet<ulong> _decodedValues;
+        readonly HPWDecoder<XORTable> _HPWDecoder;
+        readonly XORTable _table;
+        readonly Random _random = new Random();
+        readonly int _size;
+        readonly List<Func<ulong, ulong>> _hfs;
+        readonly HashSet<ulong> _decodedValues;
+
+
+        readonly int _nStepsDecoderInitial;
+        readonly int _nStepsDecoder;
+        readonly int _nStepsRecovery;
 
         PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = new();
         PickOneRandomly<Cache<Pipeline<NextOracle<TStringFactory>, TPipeline>>> _next = new();
 
 
-        EndpointsLocalizer<Cache<Pipeline<NextOracle<TStringFactory>, TPipeline>>, True> _endpointsNextLocalizer = new();
-        EndpointsLocalizer<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>, True> _endpointsBeforeLocalizer = new();
+
         public DecodingState DecodingState => _HPWDecoder.DecodingState;
 
-        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs)
+        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 100, int nStepsDecoder = 10, int nStepsRecovery = 10000)
         {
             _table = HPWDecoder.Sketch;
             _size = _table.Size();
             _hfs = hfs.ToList();
 
+            _nStepsDecoderInitial = nStepsDecoderInitial;
+            _nStepsDecoder = nStepsDecoder;
+            _nStepsRecovery = nStepsRecovery;
+
+
+
             _HPWDecoder = HPWDecoder;
             _decodedValues = _HPWDecoder.GetDecodedValues();
         }
-        void ToggleValues(HashSet<ulong>? possiblePures, List<ulong> values)
+        public void ToggleValues(HashSet<ulong>? possiblePures, List<ulong> values)
         {
             foreach (var hf in _hfs)
             {
@@ -72,9 +82,7 @@ namespace SymmetricDifferenceFinder.Improvements
                     _table.Toggle(hash, value);
                     if (possiblePures is not null)
                     {
-                        //THIS IS JUST FOR TESTING REMOVE THE CONDITION 
-                        if (hash != 0)
-                            possiblePures.Add(hash);
+                        possiblePures.Add(hash);
                     }
                 }
             }
@@ -120,14 +128,10 @@ namespace SymmetricDifferenceFinder.Improvements
                 if (_decodedValues.Contains(value))
                 {
                     _decodedValues.Remove(value);
-                    //beforeLocalizer.RemoveNode(value);
-                    //nextLocalizer.RemoveNode(value);
                 }
                 else
                 {
                     _decodedValues.Add(value);
-                    //beforeLocalizer.AddNode(value);
-                    //nextLocalizer.AddNode(value);
                 }
             }
         }
@@ -156,40 +160,19 @@ namespace SymmetricDifferenceFinder.Improvements
         {
             void Do(T a);
         }
-
-        struct AddToLocalizers<T> : IAction<ulong>
-            where T : struct, IOracle
-        {
-            EndpointsLocalizer<T, True> _before;
-            EndpointsLocalizer<T, True> _next;
-
-            public AddToLocalizers(EndpointsLocalizer<T, True> before, EndpointsLocalizer<T, True> next)
-            {
-                _before = before;
-                _next = next;
-            }
-            public void Do(ulong a)
-            {
-                _before.AddNode(a);
-                _next.AddNode(a);
-            }
-        }
         public void Decode()
         {
-            _HPWDecoder.MaxNumberOfIterations = 100;
+            _HPWDecoder.MaxNumberOfIterations = _nStepsDecoderInitial;
             _HPWDecoder.Decode();
-            _HPWDecoder.MaxNumberOfIterations = 10;
-            //foreach (var value in _decodedValues)
-            //{
-            //	beforeLocalizer.AddNode(value);
-            //	nextLocalizer.AddNode(value);
-            //};
+            _HPWDecoder.MaxNumberOfIterations = _nStepsDecoder;
 
-            HashSet<ulong> pure = new HashSet<ulong>();
+            HashSet<ulong> pure = _HPWDecoder.GetPure();
+
+
             HashSet<ulong> nextPure = new HashSet<ulong>();
             HashSet<ulong> decodedValues = new HashSet<ulong>();
 
-            int maxRounds = 10000;
+            int maxRounds = _nStepsRecovery;
             for (int i = 0; i < maxRounds; i++)
             {
                 if (_HPWDecoder.DecodingState == DecodingState.Success)
