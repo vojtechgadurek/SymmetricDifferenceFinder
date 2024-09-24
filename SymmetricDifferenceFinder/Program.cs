@@ -16,9 +16,9 @@ public class Program
         streamWriter.Close();
     }
 
-    public record class StringTestConfig(double Start, double End, double Step, int TestsInBattery, int StringLenght, int Size, Type stringFactory, Type pipeline, IHashingFunctionFamily HfFamily)
+    public record class StringTestConfig(double Start, double End, double Step, int TestsInBattery, int StringLenght, int Size, Type stringFactory, Type pipeline, IHashFunctionFamily HfFamily)
     {
-        public IEnumerable<string> Run<T>(Func<double, double, double, int, int, int, IHashingFunctionFamily, Type, Type, T> func)
+        public IEnumerable<string> Run<T>(Func<double, double, double, int, int, int, IHashFunctionFamily, Type, Type, T> func)
             where T : IEnumerable<BatteryDecodingResult>
         {
             Console.WriteLine($"Starting test {this.ToString()}");
@@ -32,9 +32,9 @@ public class Program
         }
     };
 
-    public record class BasicTestConfig(double Start, double End, double Step, int TestsInBattery, int Size, IHashingFunctionFamily HfFamily)
+    public record class BasicTestConfig(double Start, double End, double Step, int TestsInBattery, int Size, IHashFunctionFamily HfFamily)
     {
-        public IEnumerable<string> Run<T>(Func<double, double, double, int, int, IHashingFunctionFamily, T> func)
+        public IEnumerable<string> Run<T>(Func<double, double, double, int, int, IHashFunctionFamily, T> func)
             where T : IEnumerable<BatteryDecodingResult>
         {
             Console.WriteLine($"Starting test {this.ToString()}");

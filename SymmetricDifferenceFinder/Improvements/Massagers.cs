@@ -38,7 +38,7 @@ namespace SymmetricDifferenceFinder.Improvements
         where TStringFactory : struct, IStringFactory
         where TPipeline : struct, IPipeline
     {
-        readonly HPWDecoder<XORTable> _HPWDecoder;
+        readonly public HPWDecoder<XORTable> HPWDecoder;
         readonly XORTable _table;
         readonly Random _random = new Random();
         readonly int _size;
@@ -46,16 +46,14 @@ namespace SymmetricDifferenceFinder.Improvements
         readonly HashSet<ulong> _decodedValues;
 
 
-        readonly int _nStepsDecoderInitial;
-        readonly int _nStepsDecoder;
-        readonly int _nStepsRecovery;
+        public int NStepsDecoderInitial;
+        public int NStepsDecoder;
+        public int NStepsRecovery;
 
         PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = new();
         PickOneRandomly<Cache<Pipeline<NextOracle<TStringFactory>, TPipeline>>> _next = new();
 
-
-
-        public DecodingState DecodingState => _HPWDecoder.DecodingState;
+        public DecodingState DecodingState => HPWDecoder.DecodingState;
 
         public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 100, int nStepsDecoder = 10, int nStepsRecovery = 10000)
         {
@@ -63,14 +61,14 @@ namespace SymmetricDifferenceFinder.Improvements
             _size = _table.Size();
             _hfs = hfs.ToList();
 
-            _nStepsDecoderInitial = nStepsDecoderInitial;
-            _nStepsDecoder = nStepsDecoder;
-            _nStepsRecovery = nStepsRecovery;
+            NStepsDecoderInitial = nStepsDecoderInitial;
+            NStepsDecoder = nStepsDecoder;
+            NStepsRecovery = nStepsRecovery;
 
 
 
-            _HPWDecoder = HPWDecoder;
-            _decodedValues = _HPWDecoder.GetDecodedValues();
+            this.HPWDecoder = HPWDecoder;
+            _decodedValues = this.HPWDecoder.GetDecodedValues();
         }
         public void ToggleValues(HashSet<ulong>? possiblePures, List<ulong> values)
         {
@@ -140,7 +138,7 @@ namespace SymmetricDifferenceFinder.Improvements
         {
             ToggleValues(pure, values);
 
-            _HPWDecoder.OuterDecode(pure, nextPure, decodedValues);
+            HPWDecoder.OuterDecode(pure, nextPure, decodedValues);
 
             //ToggleDecodedValues(decodedValues);
             //decodedValues.Clear();
@@ -149,7 +147,7 @@ namespace SymmetricDifferenceFinder.Improvements
 
             pure.Clear();
 
-            _HPWDecoder.OuterDecode(nextPure, pure, decodedValues);
+            HPWDecoder.OuterDecode(nextPure, pure, decodedValues);
             ToggleDecodedValues(decodedValues);
             //Console.WriteLine(decodedValues.Count);
             decodedValues.Clear();
@@ -162,20 +160,20 @@ namespace SymmetricDifferenceFinder.Improvements
         }
         public void Decode()
         {
-            _HPWDecoder.MaxNumberOfIterations = _nStepsDecoderInitial;
-            _HPWDecoder.Decode();
-            _HPWDecoder.MaxNumberOfIterations = _nStepsDecoder;
+            HPWDecoder.MaxNumberOfIterations = NStepsDecoderInitial;
+            HPWDecoder.Decode();
+            HPWDecoder.MaxNumberOfIterations = NStepsDecoder;
 
-            HashSet<ulong> pure = _HPWDecoder.GetPure();
+            HashSet<ulong> pure = HPWDecoder.GetPure();
 
 
             HashSet<ulong> nextPure = new HashSet<ulong>();
             HashSet<ulong> decodedValues = new HashSet<ulong>();
 
-            int maxRounds = _nStepsRecovery;
+            int maxRounds = NStepsRecovery;
             for (int i = 0; i < maxRounds; i++)
             {
-                if (_HPWDecoder.DecodingState == DecodingState.Success)
+                if (HPWDecoder.DecodingState == DecodingState.Success)
                 {
                     Console.WriteLine(i);
                     break;

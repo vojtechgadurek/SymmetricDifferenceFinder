@@ -115,12 +115,12 @@ namespace SymmetricDifferenceFinder.Tests
         }
 
 
-        public static IEnumerable<BatteryDecodingResult> TestMassagers(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily, Type stringFactory, Type pipeline)
+        public static IEnumerable<BatteryDecodingResult> TestMassagers(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily, Type stringFactory, Type pipeline)
         {
             return (IEnumerable<BatteryDecodingResult>)typeof(BasicRetrievalTests).GetMethod(nameof(TestMassagersGeneric))!.MakeGenericMethod([stringFactory, pipeline]).Invoke(null, new object[] { start, end, step, testsInBattery, lengthKMer, size, hfFamily })!;
         }
 
-        public static IEnumerable<BatteryDecodingResult> TestMassagersGeneric<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
+        public static IEnumerable<BatteryDecodingResult> TestMassagersGeneric<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily)
         where TStringFactory : struct, IStringFactory
         where TPipeline : struct, IPipeline
         {
@@ -185,12 +185,12 @@ namespace SymmetricDifferenceFinder.Tests
             return answer;
         }
 
-        public static IEnumerable<BatteryDecodingResult> TestMassagersWeaker(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily, Type stringFactory, Type pipeline)
+        public static IEnumerable<BatteryDecodingResult> TestMassagersWeaker(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily, Type stringFactory, Type pipeline)
         {
             return (IEnumerable<BatteryDecodingResult>)typeof(BasicRetrievalTests).GetMethod(nameof(TestMassagersGeneric))!.MakeGenericMethod([stringFactory, pipeline]).Invoke(null, new object[] { start, end, step, testsInBattery, lengthKMer, size, hfFamily })!;
         }
 
-        public static IEnumerable<BatteryDecodingResult> TestMassagersGenericWeaker<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashingFunctionFamily hfFamily)
+        public static IEnumerable<BatteryDecodingResult> TestMassagersGenericWeaker<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily)
         where TStringFactory : struct, IStringFactory
         where TPipeline : struct, IPipeline
         {
@@ -214,7 +214,7 @@ namespace SymmetricDifferenceFinder.Tests
             return answer;
         }
 
-        public static IEnumerable<BatteryDecodingResult> TestRetrievalIBLT(double start, double end, double step, int testsInBattery, int size, IHashingFunctionFamily hfFamily)
+        public static IEnumerable<BatteryDecodingResult> TestRetrievalIBLT(double start, double end, double step, int testsInBattery, int size, IHashFunctionFamily hfFamily)
         {
             var test = Combinations.Combinations.IBLT();
             var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();
@@ -234,7 +234,7 @@ namespace SymmetricDifferenceFinder.Tests
         }
 
 
-        public static IEnumerable<BatteryDecodingResult> TestRetrieval(double start, double end, double step, int testsInBattery, int size, IHashingFunctionFamily hfFamily)
+        public static IEnumerable<BatteryDecodingResult> TestRetrieval(double start, double end, double step, int testsInBattery, int size, IHashFunctionFamily hfFamily)
         {
             var test = Combinations.Combinations.HPW();
             var hashingFunction = HashingFunctionCombinations.GetFromSameFamily(3, hfFamily).GetFactory();

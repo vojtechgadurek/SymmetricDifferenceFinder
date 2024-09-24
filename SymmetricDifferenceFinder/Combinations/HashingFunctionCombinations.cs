@@ -18,7 +18,7 @@ namespace SymmetricDifferenceFinder.Combinations
 
     public class HashingFunctionCombinations
     {
-        public static HashingFunctionCombination GetFromSameFamily(int number, IHashingFunctionFamily family, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
+        public static HashingFunctionCombination GetFromSameFamily(int number, IHashFunctionFamily family, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
         {
             var answer = new HashingFunctionCombination();
             for (int i = 0; i < number; i++)
@@ -28,7 +28,7 @@ namespace SymmetricDifferenceFinder.Combinations
             return answer;
         }
 
-        public static HashingFunctionCombination GetFromSameFamilyLastWeaker(int number, IHashingFunctionFamily family)
+        public static HashingFunctionCombination GetFromSameFamilyLastWeaker(int number, IHashFunctionFamily family)
         {
             var answer = new HashingFunctionCombination();
             for (int i = 0; i < number - 1; i++)
@@ -42,7 +42,7 @@ namespace SymmetricDifferenceFinder.Combinations
             return answer;
         }
 
-        public static HashingFunctionCombination GetFromMultipleFamilies(IHashingFunctionFamily[] families, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
+        public static HashingFunctionCombination GetFromMultipleFamilies(IHashFunctionFamily[] families, params Func<Expression<HashingFunction>, Expression<HashingFunction>>[] modificators)
         {
             var answer = new HashingFunctionCombination();
             foreach (var family in families)

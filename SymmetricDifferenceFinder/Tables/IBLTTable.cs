@@ -21,7 +21,7 @@ namespace SymmetricDifferenceFinder.Tables
 		private IBLTCell[] _table;
 
 		static MD5 mD5 = System.Security.Cryptography.MD5.Create();
-		static Func<ulong, ulong> ControlHashingFunction = x => (x * x * 12342834932434242492 + x * 217381931912838991) & (1 << 31 - 1); //HashingFunctionProvider.Get(typeof(MultiplyShiftFamily), ulong.MaxValue, 0).Create().Compile();
+		static Func<ulong, ulong> ControlHashingFunction = x => (x * x * 12342834932434242492 + x * 217381931912838991) & (1 << 31 - 1); //HashFunctionProvider.Get(typeof(MultiplyShiftFamily), ulong.MaxValue, 0).Create().Compile();
 
 		public IBLTTable(IBLTCell[] table)
 		{
