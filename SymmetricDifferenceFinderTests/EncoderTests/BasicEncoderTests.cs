@@ -11,116 +11,116 @@ using System.Threading.Tasks;
 
 namespace SymmetricDifferenceFinderTests.EncoderTests
 {
-	public class BasicEncoderTests
-	{
-		[Fact]
-		public void SimpleEncodingTest()
-		{
+    public class BasicEncoderTests
+    {
+        [Fact]
+        public void SimpleEncodingTest()
+        {
 
-			int size = 1024;
-			int bufferSize = 4;
+            int size = 1024;
+            int bufferSize = 4;
 
-			ulong[] table = new ulong[size];
+            ulong[] table = new ulong[size];
 
-			var hf = Enumerable.Range(0, 1).Select(_ => (Action<ulong[], ulong[], int, int>)(
-				(ulong[] keys, ulong[] hashes, int start, int length) =>
-				{
-					for (int i = 0; i < length; i++)
-					{
-						hashes[i] = keys[i];
-					}
-				})
-			);
+            var hf = Enumerable.Range(0, 1).Select(_ => (Action<ulong[], ulong[], int, int>)(
+                (ulong[] keys, ulong[] hashes, int start, int length) =>
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        hashes[i] = keys[i];
+                    }
+                })
+            );
 
-			Encoder<OverwriteTable> encoder = new Encoder<OverwriteTable>(
-				new OverwriteTable(table),
-				hf,
-				bufferSize);
+            Encoder<OverwriteTable> encoder = new Encoder<OverwriteTable>(
+                new OverwriteTable(table),
+                hf,
+                bufferSize);
 
-			encoder.Encode(new ulong[] { 1, 2, 3, 4 }, 4);
+            encoder.Encode(new ulong[] { 1, 2, 3, 4 }, 4);
 
-			for (int i = 1; i < 5; i++)
-			{
-				Assert.Equal((ulong)i, table[i]);
-			}
+            for (int i = 1; i < 5; i++)
+            {
+                Assert.Equal((ulong)i, table[i]);
+            }
 
-			for (int i = 5; i < size; i++)
-			{
-				Assert.Equal(0UL, table[i]);
-			}
-		}
+            for (int i = 5; i < size; i++)
+            {
+                Assert.Equal(0UL, table[i]);
+            }
+        }
 
-		[Fact]
-		public void SimpleEncodingTestWithModuloHashingFunction()
-		{
+        [Fact]
+        public void SimpleEncodingTestWithModuloHashingFunction()
+        {
 
-			int size = 1024;
+            int size = 1024;
 
-			var config = new EncoderConfiguration<OverwriteTable>(
-				new IHashingFunctionScheme[] { new ModuloScheme((ulong)size, 0) },
-				size
-			);
+            var config = new EncoderConfiguration<OverwriteTable>(
+                new IHashFunctionScheme[] { new ModuloScheme((ulong)size, 0) },
+                size
+            );
 
-			var factory = new EncoderFactory<OverwriteTable>(config, size => new OverwriteTable(new ulong[size]));
+            var factory = new EncoderFactory<OverwriteTable>(config, size => new OverwriteTable(new ulong[size]));
 
-			var encoder = factory.Create();
-
-
-			encoder.Encode(new ulong[] { 1, 2, 3, 4 }, 4);
-
-			var table = encoder.GetTable()._table;
-			for (int i = 1; i < 5; i++)
-			{
-				Assert.Equal((ulong)i, table[i]);
-			}
-
-			for (int i = 5; i < size; i++)
-			{
-				Assert.Equal(0UL, table[i]);
-			}
+            var encoder = factory.Create();
 
 
+            encoder.Encode(new ulong[] { 1, 2, 3, 4 }, 4);
 
-		}
+            var table = encoder.GetTable()._table;
+            for (int i = 1; i < 5; i++)
+            {
+                Assert.Equal((ulong)i, table[i]);
+            }
 
-
-		[Fact]
-		public void SimpleParallelEncodingTestWithModuloHashingFunction()
-		{
-
-			int size = 1024;
+            for (int i = 5; i < size; i++)
+            {
+                Assert.Equal(0UL, table[i]);
+            }
 
 
 
-			var encoder = new NoConflictEncoder<OverwriteTable>(
-				new OverwriteTable(new ulong[size]),
-				new List<Action<ulong[], ulong[], int, int>>()
-				{
-					(ulong[] keys, ulong[] hashes, int start, int length) =>
-					{
-						for (int i = 0; i < length; i++)
-						{
-							hashes[i] = keys[i];
-						}
-					}
-				},
-				4
-				);
+        }
 
-			encoder.SetPartitions(4);
 
-			encoder.EncodeParallel(new ulong[] { 1, 2, 3, 4 }, 4);
+        [Fact]
+        public void SimpleParallelEncodingTestWithModuloHashingFunction()
+        {
 
-			var table = encoder.GetTable()._table;
-			for (int i = 1; i < 5; i++)
-			{
-				Assert.Equal((ulong)i, table[i]);
-			}
+            int size = 1024;
 
-			for (int i = 5; i < size; i++)
-			{
-				Assert.Equal(0UL, table[i]);
-			}
-		}
-	}
+
+
+            var encoder = new NoConflictEncoder<OverwriteTable>(
+                new OverwriteTable(new ulong[size]),
+                new List<Action<ulong[], ulong[], int, int>>()
+                {
+                    (ulong[] keys, ulong[] hashes, int start, int length) =>
+                    {
+                        for (int i = 0; i < length; i++)
+                        {
+                            hashes[i] = keys[i];
+                        }
+                    }
+                },
+                4
+                );
+
+            encoder.SetPartitions(4);
+
+            encoder.EncodeParallel(new ulong[] { 1, 2, 3, 4 }, 4);
+
+            var table = encoder.GetTable()._table;
+            for (int i = 1; i < 5; i++)
+            {
+                Assert.Equal((ulong)i, table[i]);
+            }
+
+            for (int i = 5; i < size; i++)
+            {
+                Assert.Equal(0UL, table[i]);
+            }
+        }
+    }
 }
