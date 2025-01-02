@@ -55,7 +55,7 @@ namespace SymmetricDifferenceFinder.Improvements
 
         public DecodingState DecodingState => HPWDecoder.DecodingState;
 
-        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 100, int nStepsDecoder = 10, int nStepsRecovery = 10000)
+        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 100, int nStepsDecoder = 10, int nStepsRecovery = 10)
         {
             _table = HPWDecoder.Sketch;
             _size = _table.Size();
