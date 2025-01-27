@@ -82,7 +82,7 @@ public class Program
     }
 
 
-    record struct TestResult(int TableSize, int NItems, int IncorrectlyRecovered);
+    record struct TestResult(int TableSize, int NItems, int IncorrectlyRecovered, long time);
 
     public static void Main(string[] args)
     {
@@ -137,10 +137,12 @@ public class Program
         int step = (int)((endtabelesize - starttablesize) * stepcof);
 
 
+        Stopwatch stopwatch = new();
 
 
         TestResult DoOneTest(ulong tableSize)
         {
+
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
 
             EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
@@ -155,10 +157,11 @@ public class Program
 
             massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 100;
 
+            stopwatch.Restart();
             massager.Decode();
+            stopwatch.Stop();
             massager.GetDecodedValues().SymmetricExceptWith(hashsetData);
-
-            return new TestResult((int)tableSize, data.Length, massager.GetDecodedValues().Count());
+            return new TestResult((int)tableSize, data.Length, massager.GetDecodedValues().Count(), stopwatch.ElapsedMilliseconds);
         }
 
         int tableSize = starttablesize;
