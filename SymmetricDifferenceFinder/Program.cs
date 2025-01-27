@@ -173,6 +173,7 @@ public class Program
         while (tableSize < endtabelesize)
         {
             var results = Enumerable.Range(0, nTests).Select(x => DoOneTest((ulong)tableSize)).ToList();
+            Console.WriteLine($"table size finished {tableSize}");
             allresults.Add(results);
             tableSize += step;
         }
