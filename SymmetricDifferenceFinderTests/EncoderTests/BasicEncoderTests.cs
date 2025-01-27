@@ -50,11 +50,14 @@ namespace SymmetricDifferenceFinderTests.EncoderTests
             }
         }
 
+
+
         [Fact]
         public void SimpleEncodingTestWithModuloHashingFunction()
         {
 
             int size = 1024;
+
 
             var config = new EncoderConfiguration<OverwriteTable>(
                 new IHashFunctionScheme[] { new ModuloScheme((ulong)size, 0) },
