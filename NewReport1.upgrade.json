@@ -1,0 +1,165 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "",
+    "targetDisplayName": ".NET 9.0"
+  },
+  "analysisStartTime": "2025-01-27T15:57:36.1612931Z",
+  "analysisEndTime": "2025-01-27T15:58:25.4806051Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 6,
+      "issues": 1,
+      "incidents": 4,
+      "effort": 4
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 4,
+        "Optional": 0,
+        "Potential": 0,
+        "Information": 0
+      },
+      "category": {
+        "Project": 4
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "%USERPROFILE%\\source\\repos\\FlashHash\\FlashHash\\FlashHash.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "ruleInstances": [
+        {
+          "incidentId": "f8f262ea-4fe7-4484-b206-aaba7a04fbff",
+          "ruleId": "Project.0002",
+          "projectPath": "%USERPROFILE%\\source\\repos\\FlashHash\\FlashHash\\FlashHash.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current: net8.0\nNew: net9.0",
+              "protected": "Current: net8.0\nNew: net9.0"
+            },
+            "kind": "File",
+            "path": "%USERPROFILE%\\source\\repos\\FlashHash\\FlashHash\\FlashHash.csproj",
+            "snippet": "Current: net8.0\nNew: net9.0",
+            "protectedSnippet": "Current: net8.0\nNew: net9.0"
+          }
+        }
+      ]
+    },
+    {
+      "path": "%USERPROFILE%\\source\\repos\\LittleSharp\\LittleSharp\\LittleSharp.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "ruleInstances": [
+        {
+          "incidentId": "48142d6c-1420-4070-9561-42f75248776f",
+          "ruleId": "Project.0002",
+          "projectPath": "%USERPROFILE%\\source\\repos\\LittleSharp\\LittleSharp\\LittleSharp.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current: net8.0\nNew: net9.0",
+              "protected": "Current: net8.0\nNew: net9.0"
+            },
+            "kind": "File",
+            "path": "%USERPROFILE%\\source\\repos\\LittleSharp\\LittleSharp\\LittleSharp.csproj",
+            "snippet": "Current: net8.0\nNew: net9.0",
+            "protectedSnippet": "Current: net8.0\nNew: net9.0"
+          }
+        }
+      ]
+    },
+    {
+      "path": "%USERPROFILE%\\source\\repos\\RedaFasta\\RedaFasta\\RedaFasta.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "ruleInstances": [
+        {
+          "incidentId": "ec3aad66-7c19-4c15-b463-731ff9ed59d4",
+          "ruleId": "Project.0002",
+          "projectPath": "%USERPROFILE%\\source\\repos\\RedaFasta\\RedaFasta\\RedaFasta.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current: net8.0\nNew: net9.0",
+              "protected": "Current: net8.0\nNew: net9.0"
+            },
+            "kind": "File",
+            "path": "%USERPROFILE%\\source\\repos\\RedaFasta\\RedaFasta\\RedaFasta.csproj",
+            "snippet": "Current: net8.0\nNew: net9.0",
+            "protectedSnippet": "Current: net8.0\nNew: net9.0"
+          }
+        }
+      ]
+    },
+    {
+      "path": "SymmetricDifferenceFinder\\SymmetricDifferenceFinder.csproj",
+      "startingProject": true,
+      "issues": 0,
+      "storyPoints": 0,
+      "ruleInstances": []
+    },
+    {
+      "path": "SymmetricDifferenceBenchmarks\\SymmetricDifferenceFinderBenchmarks.csproj",
+      "startingProject": true,
+      "issues": 0,
+      "storyPoints": 0,
+      "ruleInstances": []
+    },
+    {
+      "path": "SymmetricDifferenceFinderTests\\SymmetricDifferenceFinderTests.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "ruleInstances": [
+        {
+          "incidentId": "6573a499-789a-441b-a172-8c77155dbb36",
+          "ruleId": "Project.0002",
+          "projectPath": "SymmetricDifferenceFinderTests\\SymmetricDifferenceFinderTests.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current: net8.0\nNew: net9.0",
+              "protected": "Current: net8.0\nNew: net9.0"
+            },
+            "kind": "File",
+            "path": "SymmetricDifferenceFinderTests\\SymmetricDifferenceFinderTests.csproj",
+            "snippet": "Current: net8.0\nNew: net9.0",
+            "protectedSnippet": "Current: net8.0\nNew: net9.0"
+          }
+        }
+      ]
+    }
+  ],
+  "rules": {
+    "Project.0002": {
+      "id": "Project.0002",
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in moderrn .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}
