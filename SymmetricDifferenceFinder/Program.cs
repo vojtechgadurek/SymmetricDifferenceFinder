@@ -63,8 +63,6 @@ public class Program
         TextReader textReader = new StreamReader(fastaFilePath);
         var cfg = FastaFile.Open(textReader);
         var reader = new FastaFileReader(cfg.kMerSize, cfg.nCharsInFile, cfg.textReader);
-
-        Console.WriteLine(cfg);
         //Load data
         ulong[] data = new ulong[cfg.nCharsInFile];
         int i = 0;
@@ -178,6 +176,7 @@ public class Program
 
         while (tableSize < endtabelesize)
         {
+            Console.WriteLine($"table size {tableSize}");
             var results = Enumerable.Range(0, nTests).Select(x => DoOneTest((ulong)tableSize)).ToList();
             Console.WriteLine($"table size finished {tableSize}");
             allresults.Add(results);
