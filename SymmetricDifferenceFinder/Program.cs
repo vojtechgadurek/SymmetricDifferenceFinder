@@ -198,12 +198,12 @@ public class Program
             if (Test(mid))
             {
                 //Console.WriteLine((mid, "Succ"));
-                minMultiply = (1 * minMultiply + 3 * mid) / 4;
+                minMultiply = (0 * minMultiply + 1 * mid);
             }
             else
             {
                 //Console.WriteLine((mid, "Fail"));
-                maxMultiply = (1 * maxMultiply + 3 * mid) / 4;
+                maxMultiply = (0 * maxMultiply + 1 * mid);
             }
         }
         return minMultiply;
@@ -227,8 +227,8 @@ public class Program
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
 
-                massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 10000;
-                massager.NStepsDecoder = 20;
+                massager.NStepsRecovery = 1000;
+                massager.NStepsDecoder = 100;
                 massager.NStepsDecoderInitial = 1000;
                 massager.Decode();
 
@@ -304,7 +304,9 @@ public class Program
             double step = double.Parse(args[argscount++]);
 
             var result = TestDifferentKMerLengths((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes);
-            File.WriteAllText(answerFile, String.Join(" ", result));
+
+
+            File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2}")));
 
 
         }
