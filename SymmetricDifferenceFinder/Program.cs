@@ -249,7 +249,7 @@ public class Program
     {
 
         List<int> values = new();
-        List<(int, double)> result = new(values.Count);
+        List<(int, double)> result = new();
 
 
         while (startKmerLength < endKmerLength)
@@ -258,7 +258,7 @@ public class Program
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
         }
 
-        Parallel.ForEach(values, (startKmerLength, i, j) =>
+        Parallel.ForEach(values, (startKmerLength) =>
         {
             //Console.WriteLine($"Currently - {startKmerLength} - is tested");
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
@@ -266,12 +266,14 @@ public class Program
                     tableSize, nTests,
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
 
-
-            result[(int)j] = (startKmerLength,
+            var res = (startKmerLength,
                 MultiplierSearch(
                     0.1, 2, nSteps,
                     f
                     ));
+
+            lock (result) { result.Add(res); }
+
             Console.WriteLine(result[^1]);
 
         });
