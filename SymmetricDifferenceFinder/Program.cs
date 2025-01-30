@@ -197,11 +197,11 @@ public class Program
             var mid = (minMultiply + maxMultiply) / 2;
             if (Test(mid))
             {
-                minMultiply = (minMultiply + 3 * mid) / 4;
+                minMultiply = (0 * minMultiply + 1 * mid) / 1;
             }
             else
             {
-                maxMultiply = (maxMultiply + 3 * mid) / 4;
+                maxMultiply = (0 * maxMultiply + 1 * mid) / 1;
             }
         }
         return minMultiply;
