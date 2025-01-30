@@ -197,12 +197,12 @@ public class Program
             var mid = (minMultiply + maxMultiply) / 2;
             if (Test(mid))
             {
-                Console.Write((mid, "Succ"));
+                Console.WriteLine((mid, "Succ"));
                 minMultiply = (0 * minMultiply + 1 * mid) / 1;
             }
             else
             {
-                Console.Write((mid, "Fail"));
+                Console.WriteLine((mid, "Fail"));
                 maxMultiply = (0 * maxMultiply + 1 * mid) / 1;
             }
         }
@@ -228,6 +228,8 @@ public class Program
                 encoder.Encode(data, data.Length);
                 massager.Decode();
                 massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 100;
+                massager.NStepsDecoder = 1000;
+                massager.NStepsDecoderInitial = 1000;
 
                 massager.GetDecodedValues().SymmetricExceptWith(data);
                 if (massager.GetDecodedValues().Count() != 0)
