@@ -289,7 +289,10 @@ public class Program
         //}
         if (args[0] == "fixed-data")
         {
-            Console.WriteLine(args);
+            foreach (var arg in args)
+            {
+                Console.WriteLine(arg);
+            }
             TestFixedData(args.AsSpan().Slice(1));
         }
         if (args[0] == "multiplier-search")
