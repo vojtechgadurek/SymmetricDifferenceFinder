@@ -197,10 +197,12 @@ public class Program
             var mid = (minMultiply + maxMultiply) / 2;
             if (Test(mid))
             {
+                Console.Write((mid, "Succ"));
                 minMultiply = (0 * minMultiply + 1 * mid) / 1;
             }
             else
             {
+                Console.Write((mid, "Fail"));
                 maxMultiply = (0 * maxMultiply + 1 * mid) / 1;
             }
         }
