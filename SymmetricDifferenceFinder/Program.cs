@@ -198,12 +198,12 @@ public class Program
             if (Test(mid))
             {
                 //Console.WriteLine((mid, "Succ"));
-                minMultiply = (0 * minMultiply + 1 * mid);
+                minMultiply = (0 * minMultiply + 1 * mid) / 2;
             }
             else
             {
                 //Console.WriteLine((mid, "Fail"));
-                maxMultiply = (0 * maxMultiply + 1 * mid);
+                maxMultiply = (0 * maxMultiply + 1 * mid) / 2;
             }
         }
         return minMultiply;
@@ -289,6 +289,7 @@ public class Program
         //}
         if (args[0] == "fixed-data")
         {
+            Console.WriteLine(args);
             TestFixedData(args.AsSpan().Slice(1));
         }
         if (args[0] == "multiplier-search")
