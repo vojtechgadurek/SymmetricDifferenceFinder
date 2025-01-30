@@ -172,12 +172,15 @@ public class Program
 
 
 
-        var allresults = new List<List<TestResult>>();
+        var allresults = new List<TestResult[]>();
 
         while (tableSize < endtabelesize)
         {
             Console.WriteLine($"table size {tableSize}");
-            var results = Enumerable.Range(0, nTests).Select(x => DoOneTest((ulong)tableSize)).AsParallel().ToList();
+
+            var results = new TestResult[nTests];
+            Parallel.ForEach(Enumerable.Range(0, nTests), (i) => { results[i] = DoOneTest((ulong)tableSize); });
+
             Console.WriteLine($"table size finished {tableSize}");
             allresults.Add(results);
             tableSize += step;
