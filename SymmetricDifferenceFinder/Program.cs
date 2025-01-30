@@ -198,12 +198,12 @@ public class Program
             if (Test(mid))
             {
                 //Console.WriteLine((mid, "Succ"));
-                minMultiply = (0 * minMultiply + 1 * mid) / 1;
+                minMultiply = (1 * minMultiply + 3 * mid) / 4;
             }
             else
             {
                 //Console.WriteLine((mid, "Fail"));
-                maxMultiply = (0 * maxMultiply + 1 * mid) / 1;
+                maxMultiply = (1 * maxMultiply + 3 * mid) / 4;
             }
         }
         return minMultiply;
