@@ -228,7 +228,7 @@ public class Program
                 encoder.Encode(data, data.Length);
 
                 massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 1000;
-                massager.NStepsDecoder = 1000;
+                massager.NStepsDecoder = 10;
                 massager.NStepsDecoderInitial = 1000;
 
                 massager.Decode();
