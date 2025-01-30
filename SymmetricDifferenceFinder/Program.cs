@@ -247,16 +247,18 @@ public class Program
 
     public static List<(int, double)> TestDifferentKMerLengths(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, IEnumerable<IHashFunctionScheme> hfs)
     {
-        List<(int, double)> result = new();
 
         List<int> values = new();
+        List<(int, double)> result = new(values.Count);
+
+
         while (startKmerLength < endKmerLength)
         {
             values.Add(startKmerLength);
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
         }
 
-        Parallel.ForEach(values, (startKmerLength) =>
+        Parallel.ForEach(values, (startKmerLength, i, j) =>
         {
             //Console.WriteLine($"Currently - {startKmerLength} - is tested");
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
@@ -264,14 +266,12 @@ public class Program
                     tableSize, nTests,
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
 
-            lock (result)
-            {
-                result.Add((startKmerLength,
-                    MultiplierSearch(
-                        0.1, 2, nSteps,
-                        f
-                        )));
-            }
+
+            result[j] = (startKmerLength,
+                MultiplierSearch(
+                    0.1, 2, nSteps,
+                    f
+                    ));
             Console.WriteLine(result[^1]);
 
         });
