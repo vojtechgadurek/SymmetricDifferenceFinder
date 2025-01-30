@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using RedaFasta;
 using SymmetricDifferenceFinder.Improvements;
 using SymmetricDifferenceFinder.Improvements.StringFactories;
@@ -84,7 +85,7 @@ public class Program
 
     record struct TestResult(int TableSize, int NItems, int IncorrectlyRecovered, long time);
 
-    public static void Main(string[] args)
+    public static void TestFixedData(Span<string> args)
     {
         //ARGS
 
@@ -180,6 +181,102 @@ public class Program
 
         File.WriteAllText(
             fileToStoreResults, JsonSerializer.Serialize(allresults));
+
+    }
+
+    public static void MultiplierSearch(Span<string> args)
+    {
+
+    }
+
+
+    public static double MultiplierSearch(double minMultiply, double maxMultiply, int steps, Func<double, bool> Test)
+    {
+        for (int i = 0; i < steps; i++)
+        {
+            var mid = (minMultiply + maxMultiply) / 2;
+            if (Test(mid))
+            {
+                minMultiply = (minMultiply + mid) / 2;
+            }
+            else
+            {
+                maxMultiply = (maxMultiply + mid) / 2;
+            }
+        }
+        return minMultiply;
+    }
+
+    public static Func<double, bool> TestMultiplier(IEnumerable<IHashFunctionScheme> schemes, int tableSize, int nTests, Func<int, ulong[]> dataProvider)
+    {
+        EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
+        HPWDecoderFactory<XORTable> decoderFactory = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
+
+
+        bool OneTest(double multiply)
+        {
+            for (int i = 0; i < nTests; i++)
+            {
+                var encoder = encoderFactory.Create();
+                var decoder = decoderFactory.Create(encoder.GetTable());
+                var massager = new Massager<KMerStringFactory, CanonicalOrder>(decoder, schemes.Select(x => x.Create().Compile()));
+                var data = dataProvider((int)(tableSize * multiply));
+                encoder.Encode(data, data.Length);
+                massager.Decode();
+                massager.GetDecodedValues().SymmetricExceptWith(new HashSet<ulong>(data));
+                if (massager.GetDecodedValues().Count() != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return OneTest;
+    }
+
+
+    public static List<(int, double)> TestDifferentKMerLengths(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, IEnumerable<IHashFunctionScheme> hfs)
+    {
+        List<(int, double)> result = new();
+
+
+        while (startKmerLength < endKmerLength)
+        {
+            startKmerLength = (int)Math.Ceiling(startKmerLength * step);
+            result.Add((startKmerLength,
+                MultiplierSearch(
+                    1, 2, nSteps,
+                    TestMultiplier(hfs,
+                    tableSize, nTests,
+                    x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray()))));
+        };
+        return result;
+    }
+
+
+    public static void Main(string[] args)
+    {
+        if (args[0] == "fixed-data")
+        {
+            TestFixedData(args.AsSpan().Slice(1));
+        }
+        if (args[0] == "multiplier-search")
+        {
+            int argscount = 1;
+            string answerFile = args[argscount++];
+            ulong tableSize = ulong.Parse(args[argscount++]);
+            var hashFunctionTypes = args[argscount++].Split('-').Select(x => HashFunctionProvider.Get(HashFunctionProvider.GetFamilyByName(x), tableSize, 0)).ToList();
+            int nTests = int.Parse(args[argscount++]);
+            int nSteps = int.Parse(args[argscount++]);
+            double minKmerLength = double.Parse(args[argscount++]);
+            double maxKmerLength = double.Parse(args[argscount++]);
+            double step = double.Parse(args[argscount++]);
+
+            var result = TestDifferentKMerLengths((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes);
+            File.WriteAllText(answerFile, JsonSerializer.Serialize(result));
+
+
+        }
 
 
 
