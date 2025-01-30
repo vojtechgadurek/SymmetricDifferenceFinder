@@ -120,7 +120,7 @@ namespace SymmetricDifferenceFinder.Tests
             return (IEnumerable<BatteryDecodingResult>)typeof(BasicRetrievalTests).GetMethod(nameof(TestMassagersGeneric))!.MakeGenericMethod([stringFactory, pipeline]).Invoke(null, new object[] { start, end, step, testsInBattery, lengthKMer, size, hfFamily })!;
         }
 
-        public static IEnumerable<BatteryDecodingResult> TestMassagersGeneric<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily, Func<int, ulong[]> dataFactory)
+        public static IEnumerable<BatteryDecodingResult> TestMassagersGeneric<TStringFactory, TPipeline>(double start, double end, double step, int testsInBattery, int lengthKMer, int size, IHashFunctionFamily hfFamily)
         where TStringFactory : struct, IStringFactory
         where TPipeline : struct, IPipeline
         {
@@ -132,10 +132,9 @@ namespace SymmetricDifferenceFinder.Tests
                 var counter = 0;
                 var hfSize = 0;
 
-                hfSize = (size - counter) / 2;
+                hfSize = size;
                 result.Add(hfFamily.GetScheme((ulong)hfSize, (ulong)counter).Create());
-                counter += hfSize;
-                hfSize = (size - counter);
+                result.Add(hfFamily.GetScheme((ulong)hfSize, (ulong)counter).Create());
                 result.Add(hfFamily.GetScheme((ulong)hfSize, (ulong)counter).Create());
 
                 return result;
@@ -155,7 +154,7 @@ namespace SymmetricDifferenceFinder.Tests
             var batteryTest = new BatteryTest(start, end, step, size);
 
 
-            var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, dataFactory);
+            var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (x) => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, lengthKMer).ToArray());
 
             var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 

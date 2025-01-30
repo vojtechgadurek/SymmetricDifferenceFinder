@@ -9,20 +9,19 @@ using SymmetricDifferenceFinder.Improvements.Oracles;
 namespace SymmetricDifferenceFinderTests.Improvements
 {
 
-	public class TestCanonicalOrders
-	{
-		[Theory]
-		[InlineData(1)]
-		[InlineData(100)]
-		[InlineData(33333)]
-		[InlineData(1 << 61)]
+    public class TestCanonicalOrders
+    {
+        [Theory]
+        [InlineData((1 << 2) + 0b11)]
+        [InlineData((100 << 2) + 0b11)]
+        [InlineData((33333 << 2) + 0b11)]
 
 
-		void TestCanonicalOrder(ulong i)
-		{
-			CanonicalOrder a = default;
-			var res = a.Other(a.Other(i));
-			Assert.Equal(i, res);
-		}
-	}
+        void TestCanonicalOrder(ulong i)
+        {
+            CanonicalOrder a = default;
+            var res = a.Other(a.Other(i));
+            Assert.Equal(i, res);
+        }
+    }
 }

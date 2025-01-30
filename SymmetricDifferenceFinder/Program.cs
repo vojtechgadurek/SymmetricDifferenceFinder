@@ -224,6 +224,7 @@ public class Program
                 var encoder = encoderFactory.Create();
                 var decoder = decoderFactory.Create(encoder.GetTable());
                 var massager = new Massager<KMerStringFactory, CanonicalOrder>(decoder, hfs);
+                massager.NStepsDecoder = (int)Math.Log((double)tableSize) + 100;
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
                 massager.Decode();
@@ -270,6 +271,10 @@ public class Program
 
     public static void Main(string[] args)
     {
+        //if (args == null || args.Length == 0)
+        //{
+        //    args = ["a"];
+        //}
         if (args[0] == "fixed-data")
         {
             TestFixedData(args.AsSpan().Slice(1));
@@ -308,15 +313,15 @@ public class Program
 
 
         //StringTestConfig config;
-        //config = new StringTestConfig(1.2, 2, 0.01, 1, 30, 1000, typeof(KMerStringFactory), typeof(CanonicalOrder), new TabulationFamily());
-        //config = config with { HfFamily = new LinearCongruenceFamily() };
+        //config = new StringTestConfig(1, 1.1, 0.01, 1, 31, 100000, typeof(KMerStringFactory), typeof(CanonicalOrder), new TabulationFamily());
+        ////config = config with { HfFamily = new LinearCongruenceFamily() };
 
-        ////config = config with { HfFamily = new TabulationFamily() };
-        ////Write("\\Tests\\WARMUP.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+        //config = config with { HfFamily = new TabulationFamily() };
+        //Write("\\Tests\\WARMUP.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
-        ////config = config with { TestsInBattery = 500, Step = 0.01, Start = 1.0, End = 1.35 };
-        ////config = config with { HfFamily = new MultiplyShiftFamily() };
-        ////Write("\\Tests\\KMerRetrieval0mul.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+        //config = config with { TestsInBattery = 500, Step = 0.01, Start = 1.0, End = 1.35 };
+        //config = config with { HfFamily = new MultiplyShiftFamily() };
+        //Write("\\Tests\\KMerRetrieval0mul.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
         ////Write("\\Tests\\KMerRetrieval0lin.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 

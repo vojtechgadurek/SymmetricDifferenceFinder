@@ -175,7 +175,7 @@ namespace SymmetricDifferenceFinder.Improvements
             {
                 if (HPWDecoder.DecodingState == DecodingState.Success)
                 {
-                    //Console.WriteLine(i);
+                    Console.WriteLine(i);
                     break;
                 }
                 //BinPackingDecode();
@@ -188,7 +188,7 @@ namespace SymmetricDifferenceFinder.Improvements
 
                 if (i == maxRounds - 1)
                 {
-                    //Console.WriteLine(i);
+                    Console.WriteLine(i);
                 }
             }
         }
