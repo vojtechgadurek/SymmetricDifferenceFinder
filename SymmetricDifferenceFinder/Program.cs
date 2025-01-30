@@ -212,14 +212,16 @@ public class Program
         EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
         HPWDecoderFactory<XORTable> decoderFactory = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
 
+        var hfs = schemes.Select(x => x.Create().Compile());
 
         bool OneTest(double multiply)
         {
+
             for (int i = 0; i < nTests; i++)
             {
                 var encoder = encoderFactory.Create();
                 var decoder = decoderFactory.Create(encoder.GetTable());
-                var massager = new Massager<KMerStringFactory, CanonicalOrder>(decoder, schemes.Select(x => x.Create().Compile()));
+                var massager = new Massager<KMerStringFactory, CanonicalOrder>(decoder, hfs);
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
                 massager.Decode();
@@ -246,12 +248,14 @@ public class Program
         {
             //Console.WriteLine($"Currently - {startKmerLength} - is tested");
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
+            var f = TestMultiplier(hfs,
+                    tableSize, nTests,
+                    x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
             result.Add((startKmerLength,
                 MultiplierSearch(
                     0.1, 2, nSteps,
-                    TestMultiplier(hfs,
-                    tableSize, nTests,
-                    x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray()))));
+                    f
+                    )));
             Console.WriteLine(result[^1]);
 
         }
