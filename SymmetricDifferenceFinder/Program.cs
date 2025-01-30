@@ -263,11 +263,15 @@ public class Program
             var f = TestMultiplier(hfs,
                     tableSize, nTests,
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
-            result.Add((startKmerLength,
-                MultiplierSearch(
-                    0.1, 2, nSteps,
-                    f
-                    )));
+
+            lock (result)
+            {
+                result.Add((startKmerLength,
+                    MultiplierSearch(
+                        0.1, 2, nSteps,
+                        f
+                        )));
+            }
             Console.WriteLine(result[^1]);
 
         });
@@ -298,7 +302,7 @@ public class Program
             double step = double.Parse(args[argscount++]);
 
             var result = TestDifferentKMerLengths((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes);
-            File.WriteAllText(answerFile, JsonSerializer.Serialize(result));
+            File.WriteAllText(answerFile, String.Join(" ", result));
 
 
         }
