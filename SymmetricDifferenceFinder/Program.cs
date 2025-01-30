@@ -223,7 +223,7 @@ public class Program
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
                 massager.Decode();
-                massager.GetDecodedValues().SymmetricExceptWith(new HashSet<ulong>(data));
+                massager.GetDecodedValues().SymmetricExceptWith(data);
                 if (massager.GetDecodedValues().Count() != 0)
                 {
                     return false;
@@ -246,7 +246,7 @@ public class Program
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
             result.Add((startKmerLength,
                 MultiplierSearch(
-                    1, 2, nSteps,
+                    0.1, 2, nSteps,
                     TestMultiplier(hfs,
                     tableSize, nTests,
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray()))));
