@@ -64,6 +64,7 @@ public class Program
         var cfg = FastaFile.Open(textReader);
         var reader = new FastaFileReader(cfg.kMerSize, cfg.nCharsInFile, cfg.textReader);
 
+        Console.WriteLine(cfg);
         //Load data
         ulong[] data = new ulong[cfg.nCharsInFile];
         int i = 0;
