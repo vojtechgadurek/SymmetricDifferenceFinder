@@ -223,6 +223,8 @@ public class Program
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
                 massager.Decode();
+                massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 100;
+
                 massager.GetDecodedValues().SymmetricExceptWith(data);
                 if (massager.GetDecodedValues().Count() != 0)
                 {
@@ -242,7 +244,7 @@ public class Program
 
         while (startKmerLength < endKmerLength)
         {
-            Console.WriteLine($"Currently - {startKmerLength} - is tested");
+            //Console.WriteLine($"Currently - {startKmerLength} - is tested");
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
             result.Add((startKmerLength,
                 MultiplierSearch(
