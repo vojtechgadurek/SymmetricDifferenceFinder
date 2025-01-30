@@ -242,6 +242,8 @@ public class Program
 
         while (startKmerLength < endKmerLength)
         {
+            Console.WriteLine($"Currently - {startKmerLength} - is tested");
+            Console.WriteLine(result[^1]);
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
             result.Add((startKmerLength,
                 MultiplierSearch(
