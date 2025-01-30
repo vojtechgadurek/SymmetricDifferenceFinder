@@ -267,7 +267,7 @@ public class Program
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
 
 
-            result[j] = (startKmerLength,
+            result[(int)j] = (startKmerLength,
                 MultiplierSearch(
                     0.1, 2, nSteps,
                     f
