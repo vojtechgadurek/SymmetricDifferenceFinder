@@ -293,7 +293,7 @@ public class Program
             {
                 Console.WriteLine(arg);
             }
-            TestFixedData(args.AsSpan().Slice(1));
+            TestFixedData(args.AsSpan().Slice(1).ToArray());
         }
         if (args[0] == "multiplier-search")
         {
