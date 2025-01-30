@@ -135,6 +135,9 @@ public class Program
         starttablesize = (int)(starttablesizecof * data.Length);
         endtabelesize = (int)(endtabelesizecof * data.Length);
 
+        Console.WriteLine(starttablesize);
+        Console.WriteLine(endtabelesize);
+
         int step = (int)((endtabelesize - starttablesize) * stepcof);
 
 
@@ -289,11 +292,7 @@ public class Program
         //}
         if (args[0] == "fixed-data")
         {
-            foreach (var arg in args)
-            {
-                Console.WriteLine(arg);
-            }
-            TestFixedData(args.AsSpan().Slice(1).ToArray());
+            TestFixedData(args.AsSpan().Slice(1));
         }
         if (args[0] == "multiplier-search")
         {
