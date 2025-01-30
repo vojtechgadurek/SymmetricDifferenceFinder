@@ -249,8 +249,14 @@ public class Program
     {
         List<(int, double)> result = new();
 
-
+        List<int> values = new();
         while (startKmerLength < endKmerLength)
+        {
+            values.Add(startKmerLength);
+            startKmerLength = (int)Math.Ceiling(startKmerLength * step);
+        }
+
+        Parallel.ForEach(values, (startKmerLength) =>
         {
             //Console.WriteLine($"Currently - {startKmerLength} - is tested");
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
@@ -264,8 +270,7 @@ public class Program
                     )));
             Console.WriteLine(result[^1]);
 
-        }
-        ;
+        });
         return result;
     }
 
