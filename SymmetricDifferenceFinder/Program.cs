@@ -227,8 +227,8 @@ public class Program
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
 
-                massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 1000;
-                massager.NStepsDecoder = 10;
+                massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 10000;
+                massager.NStepsDecoder = 20;
                 massager.NStepsDecoderInitial = 1000;
                 massager.Decode();
 
