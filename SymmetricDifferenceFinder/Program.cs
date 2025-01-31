@@ -179,7 +179,9 @@ public class Program
             Console.WriteLine($"table size {tableSize}");
 
             var results = new TestResult[nTests];
-            Parallel.ForEach(Enumerable.Range(0, nTests), (i) => { results[i] = DoOneTest((ulong)tableSize); });
+
+            var op = new ParallelOptions() { MaxDegreeOfParallelism = 7 };
+            Parallel.ForEach(Enumerable.Range(0, nTests), op, (i) => { results[i] = DoOneTest((ulong)tableSize); });
 
             Console.WriteLine($"table size finished {tableSize}");
             allresults.Add(results);
@@ -311,11 +313,7 @@ public class Program
             double step = double.Parse(args[argscount++]);
 
             var result = TestDifferentKMerLengths((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes);
-
-
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2}")));
-
-
         }
 
 
