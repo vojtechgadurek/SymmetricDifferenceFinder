@@ -10,6 +10,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\FlashHash\FlashHash\FlashHash.csproj" />
+		<ProjectReference Include="..\..\KMerUtils\KMerUtils\KMerUtils.csproj" />
 		<ProjectReference Include="..\..\LittleSharp\LittleSharp\LittleSharp.csproj" />
 		<ProjectReference Include="..\..\RedaFasta\RedaFasta\RedaFasta.csproj" />
 	</ItemGroup>

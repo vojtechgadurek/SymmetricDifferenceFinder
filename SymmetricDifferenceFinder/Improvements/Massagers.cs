@@ -50,12 +50,12 @@ namespace SymmetricDifferenceFinder.Improvements
         public int NStepsDecoder;
         public int NStepsRecovery;
 
-        PickOneRandomly<Cache<Pipeline<BeforeOracle<TStringFactory>, TPipeline>>> _before = new();
-        PickOneRandomly<Cache<Pipeline<NextOracle<TStringFactory>, TPipeline>>> _next = new();
+        PickOneRandomly<Pipeline<BeforeOracle<TStringFactory>, TPipeline>> _before = new();
+        PickOneRandomly<Pipeline<NextOracle<TStringFactory>, TPipeline>> _next = new();
 
         public DecodingState DecodingState => HPWDecoder.DecodingState;
 
-        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 100, int nStepsDecoder = 10, int nStepsRecovery = 10)
+        public Massager(HPWDecoder<XORTable> HPWDecoder, IEnumerable<HashingFunction> hfs, int nStepsDecoderInitial = 1000, int nStepsDecoder = 10000, int nStepsRecovery = 100)
         {
             _table = HPWDecoder.Sketch;
             _size = _table.Size();
@@ -84,7 +84,6 @@ namespace SymmetricDifferenceFinder.Improvements
                     }
                 }
             }
-
             ToggleDecodedValues(values);
         }
 

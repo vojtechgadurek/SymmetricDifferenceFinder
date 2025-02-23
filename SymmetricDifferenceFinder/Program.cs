@@ -1,4 +1,5 @@
 ﻿
+using Iced.Intel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using RedaFasta;
 using SymmetricDifferenceFinder.Improvements;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using KMerUtils.KMer;
 
 namespace SymmetricDifferenceFinder;
 public class Program
@@ -31,7 +33,8 @@ public class Program
             Console.WriteLine($"Starting test {this.ToString()}");
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            var answer = new string[] { this.ToString() }.Concat(func(Start, End, Step, TestsInBattery, StringLenght, Size, HfFamily, stringFactory, pipeline).Select(x => x.ToString()).Select(x => { Console.WriteLine(x); return x; })).ToList();
+            var answer = new string[] { this.ToString() }.Concat(func(Start, End, Step, TestsInBattery, StringLenght, Size, HfFamily, stringFactory, pipeline)
+                .Select(x => x.ToString()).Select(x => { Console.WriteLine(x); return x; })).ToList();
 
             Console.WriteLine($"Test {this.ToString()} took {stopwatch.ElapsedMilliseconds} ms"); ;
 
@@ -292,13 +295,32 @@ public class Program
 
     public static void Main(string[] args)
     {
-        //if (args == null || args.Length == 0)
-        //{
-        //    args = ["a"];
-        //}
+        if (args == null || args.Length == 0)
+        {
+            args = ["a"];
+        }
+
+        if (args[0] == "data") {
+
+
+            foreach (var i in StringDataFactory<KMerStringFactory, None>.GetRandomStringData(100, 10)
+                .ToArray()) Console.WriteLine(i.ToStringRepre(10));
+
+            ulong kMer = 0;
+
+            Console.WriteLine("-----------------");
+            for(int i = 0; i < 100; i++)
+            {
+                var f = new KMerStringFactory();
+                Console.WriteLine(kMer.ToStringRepre(10));
+                kMer = f.GetPossibleBefore(kMer)[Random.Shared.Next(4)];
+            }
+            return;
+        };
         if (args[0] == "fixed-data")
         {
             TestFixedData(args.AsSpan().Slice(1));
+            return;
         }
         if (args[0] == "multiplier-search")
         {
@@ -314,6 +336,7 @@ public class Program
 
             var result = TestDifferentKMerLengths((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2}")));
+            return;
         }
 
 
@@ -331,12 +354,12 @@ public class Program
         //if (args[1] == "generated-data") { }
 
 
-        //StringTestConfig config;
-        //config = new StringTestConfig(1, 1.1, 0.01, 1, 31, 100000, typeof(KMerStringFactory), typeof(CanonicalOrder), new TabulationFamily());
-        ////config = config with { HfFamily = new LinearCongruenceFamily() };
+        StringTestConfig config;
+        config = new StringTestConfig(1, 1.5, 0.01, 1, 31, 1000, typeof(KMerStringFactory), typeof(CanonicalOrder), new TabulationFamily());
+        //config = config with { HfFamily = new LinearCongruenceFamily() };
 
-        //config = config with { HfFamily = new TabulationFamily() };
-        //Write("\\Tests\\WARMUP.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
+        config = config with { HfFamily = new TabulationFamily() };
+        Write("\\Tests\\WARMUP.txt", config.Run(Tests.BasicRetrievalTests.TestMassagers));
 
         //config = config with { TestsInBattery = 500, Step = 0.01, Start = 1.0, End = 1.35 };
         //config = config with { HfFamily = new MultiplyShiftFamily() };

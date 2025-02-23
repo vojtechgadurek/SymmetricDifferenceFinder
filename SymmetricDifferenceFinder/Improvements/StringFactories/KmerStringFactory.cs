@@ -19,21 +19,26 @@ namespace SymmetricDifferenceFinder.Improvements.StringFactories
 
         public ulong[] GetPossibleBefore(ulong value)
         {
-            value >>>= 2;
             ulong sizeMask = (1UL << (Size * 2)) - 1UL;
+
+            value >>>= 2;
+            value <<= 2;
 
             var answer = new ulong[4];
             for (ulong i = 0; i < 4; i++)
             {
-                answer[i] = (((sizeMask & (value << 2)) | i) << 2) | 0b11;
+                answer[i] = (((sizeMask & (value)) | i) << 2) | 0b11;
             }
             return answer;
         }
 
         public ulong[] GetPossibleNext(ulong value)
         {
-            value >>>= 2;
             ulong sizeMask = (1UL << (Size * 2)) - 1UL;
+
+            value >>>= 2;
+            value <<= 2;
+
             var answer = new ulong[4];
             for (ulong i = 0; i < 4; i++)
             {

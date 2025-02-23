@@ -154,7 +154,9 @@ namespace SymmetricDifferenceFinder.Tests
             var batteryTest = new BatteryTest(start, end, step, size);
 
 
-            var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction, (x) => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, lengthKMer).ToArray());
+            var factory = new RetrievalTestFactory<XORTable, XORTable>(test, hashingFunction,
+                (x) => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, lengthKMer)
+                .ToArray());
 
             var answer = batteryTest.Run((numberItems) => factory.Get(size).Run(numberItems), testsInBattery);
 
