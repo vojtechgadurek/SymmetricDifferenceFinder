@@ -424,7 +424,7 @@ public class Program
             int maxKmerLength = int.Parse(args[argscount++]);
             double step = double.Parse(args[argscount++]);
 
-            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes, 4:);
+            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes, 4);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2}")));
             return;
         }
