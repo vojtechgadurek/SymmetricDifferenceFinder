@@ -259,7 +259,8 @@ public class Program
         return OneTest;
     }
 
-    public static Func<double, double> TestMul(IEnumerable<IHashFunctionScheme> schemes, int tableSize, int nTests, Func<int, ulong[]> dataProvider)
+    public static Func<double, double> TestMul(IEnumerable<IHashFunctionScheme> schemes, int tableSize, int nTests, Func<int, ulong[]> dataProvider, 
+        (int recovery, int decoder, int initial) config)
     {
         EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
         HPWDecoderFactory<XORTable> decoderFactory = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
@@ -277,9 +278,10 @@ public class Program
                 var data = dataProvider((int)(tableSize * multiply));
                 encoder.Encode(data, data.Length);
 
-                massager.NStepsRecovery = 1000;
-                massager.NStepsDecoder = 100;
-                massager.NStepsDecoderInitial = 1000;
+
+                massager.NStepsRecovery = config.recovery;
+                massager.NStepsDecoder = config.decoder;
+                massager.NStepsDecoderInitial = config.initial;
                 massager.Decode();
 
 
@@ -328,6 +330,7 @@ public class Program
     }
     public static List<(int,double, double, long)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, 
         IEnumerable<IHashFunctionScheme> hfs,
+        (int, int, int) config,
         int nThreads)
     {
 
@@ -348,7 +351,9 @@ public class Program
             startKmerLength = (int)Math.Ceiling(startKmerLength * step);
             var f = TestMul(hfs,
                     tableSize, nTests,
-                    x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
+                    x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray(),
+                    config
+                    );
 
             Stopwatch stop = new Stopwatch();
             for (double i = 0; i < 2; i += 0.01)
@@ -427,7 +432,15 @@ public class Program
             int maxKmerLength = int.Parse(args[argscount++]);
             double step = double.Parse(args[argscount++]);
 
-            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes, 4);
+            int recovery = int.Parse(args[argscount++]);
+            int decoder = int.Parse(args[argscount++]);
+            int initial = int.Parse(args[argscount++]);
+
+            var c = (recovery, decoder, initial);
+
+            int nthreads = int.Parse(args[argscount++]);
+
+            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes,c, nthreads);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3} {x.Item4}")));
             return;
         }
