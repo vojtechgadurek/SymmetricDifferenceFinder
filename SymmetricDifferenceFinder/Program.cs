@@ -284,7 +284,7 @@ public class Program
 
 
                 massager.GetDecodedValues().SymmetricExceptWith(data);
-                if (massager.GetDecodedValues().Count() != 0) countSucc+=1;
+                if (massager.GetDecodedValues().Count() == 0 ) countSucc+=1;
             }
             return countSucc / nTests;
         }
@@ -326,13 +326,13 @@ public class Program
         });
         return result;
     }
-    public static List<(int,double, double)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, 
+    public static List<(int,double, double, long)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, 
         IEnumerable<IHashFunctionScheme> hfs,
         int nThreads)
     {
 
         List<int> values = new();
-        List<(int,double, double)> result = new();
+        List<(int,double, double, long)> result = new();
 
 
         while (startKmerLength < endKmerLength)
@@ -350,12 +350,15 @@ public class Program
                     tableSize, nTests,
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
 
-
+            Stopwatch stop = new Stopwatch();
             for (double i = 0; i < 2; i += 0.01)
             {
+                stop.Restart();
                 var r = f(i);
+                stop.Stop();
+
                 lock (result) {
-                    result.Add((startKmerLength, i, r));
+                    result.Add((startKmerLength, i, r, stop.ElapsedMilliseconds));
                 };
             }
         });
@@ -425,7 +428,7 @@ public class Program
             double step = double.Parse(args[argscount++]);
 
             var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes, 4);
-            File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3}")));
+            File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3} {x.Item4}")));
             return;
         }
 
