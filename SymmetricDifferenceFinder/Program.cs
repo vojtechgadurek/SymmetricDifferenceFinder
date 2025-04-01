@@ -351,7 +351,7 @@ public class Program
                     x => StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(x, startKmerLength).ToArray());
 
 
-            for (double i = 0; i < 2; i += step)
+            for (double i = 0; i < 2; i += 0.01)
             {
                 var r = f(i);
                 lock (result) {
