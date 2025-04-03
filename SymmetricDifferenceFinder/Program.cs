@@ -366,7 +366,9 @@ public class Program
                 stop.Stop();
 
                 lock (result) {
-                    result.Add((startKmerLength, i, r, stop.ElapsedMilliseconds));
+                    var res = (startKmerLength, i, r, stop.ElapsedMilliseconds);
+                    Console.WriteLine(res);
+                    result.Add(res);
                 };
             }
         });
