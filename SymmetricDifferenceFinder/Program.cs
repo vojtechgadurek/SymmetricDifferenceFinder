@@ -444,25 +444,23 @@ public class Program
 
             int nthreads = int.Parse(args[argscount++]);
 
-            double startmul = int.Parse(args[argscount++]);
-            double endmul = int.Parse(args[argscount++]);
-            double stepmul = int.Parse(args[argscount++]);
+            double startmul = double.Parse(args[argscount++]);
+            double endmul = double.Parse(args[argscount++]);
+            double stepmul = double.Parse(args[argscount++]);
 
             var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes,c, startmul, endmul, stepmul, nthreads);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3} {x.Item4}")));
             return;
         }
 
-
-        //END ARGS
+        //END ARGSS
 
 
         //int nHashFunctions = 3;
 
 
 
-        //if (args[1] == "generated-data") { }
-
+        //if (args[1] == "generated-data") { }S
 
         StringTestConfig config;
         config = new StringTestConfig(1, 1.5, 0.01, 1, 31, 1000, typeof(KMerStringFactory), typeof(CanonicalOrder), new TabulationFamily());
