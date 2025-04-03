@@ -331,6 +331,9 @@ public class Program
     public static List<(int,double, double, long)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, 
         IEnumerable<IHashFunctionScheme> hfs,
         (int, int, int) config,
+        double startmul,
+        double endmul,
+        double mulstep,
         int nThreads)
     {
 
@@ -356,7 +359,7 @@ public class Program
                     );
 
             Stopwatch stop = new Stopwatch();
-            for (double i = 0; i < 2; i += 0.01)
+            for (double i = startmul; i < endmul; i += mulstep)
             {
                 stop.Restart();
                 var r = f(i);
@@ -435,12 +438,15 @@ public class Program
             int recovery = int.Parse(args[argscount++]);
             int decoder = int.Parse(args[argscount++]);
             int initial = int.Parse(args[argscount++]);
-
             var c = (recovery, decoder, initial);
 
             int nthreads = int.Parse(args[argscount++]);
 
-            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes,c, nthreads);
+            double startmul = int.Parse(args[argscount++]);
+            double endmul = int.Parse(args[argscount++]);
+            double stepmul = int.Parse(args[argscount++]);
+
+            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes,c, startmul, endmul, stepmul, nthreads);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3} {x.Item4}")));
             return;
         }
