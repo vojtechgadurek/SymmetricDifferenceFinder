@@ -154,7 +154,8 @@ public class Program
 
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
 
-            EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
+            EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), 
+                size => new XORTable(size));
 
             var encoder = encoderFactory.Create();
             encoder.Encode(hashsetData.ToArray(), hashsetData.Count());
@@ -162,15 +163,16 @@ public class Program
             HPWDecoderFactory<XORTable> table = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
             var decoder = table.Create(encoder.GetTable());
 
-            Massager<KMerStringFactory, CanonicalOrder> massager = new Massager<KMerStringFactory, CanonicalOrder>(decoder, schemes.Select(x => x.Create().Compile()));
+            Massager<KMerStringFactory, CanonicalOrder> massager = 
+                new Massager<KMerStringFactory, CanonicalOrder>(decoder, schemes.Select(x => x.Create().Compile()));
 
-            massager.NStepsRecovery = (int)(Math.Log((double)tableSize) * 10) + 100;
+            massager.NStepsRecovery =decoderSteps;
 
             stopwatch.Restart();
             massager.Decode();
             stopwatch.Stop();
             massager.GetDecodedValues().SymmetricExceptWith(hashsetData);
-            return new TestResult((int)tableSize, data.Length, massager.GetDecodedValues().Count(), stopwatch.ElapsedMilliseconds);
+            return new TestResult((int)tableSize, hashsetData.Count(), massager.GetDecodedValues().Count(), stopwatch.ElapsedMilliseconds);
         }
 
         int tableSize = starttablesize;
