@@ -118,8 +118,8 @@ public class Program
         if (datasource.StartsWith(filecall))
         {
             data = LoadKmersFromFile(datasource.Substring(filecall.Length));
-            Console.WriteLine(data.Length);
             hashsetData = new HashSet<ulong>(data);
+            Console.WriteLine(hashsetData.Count);
         }
         else if (datasource.StartsWith(generatedcall))
         {
