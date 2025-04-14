@@ -190,7 +190,7 @@ public class Program
 
 
             var average_decoder = results.Average(x => x.IncorrectlyRecovered);
-            Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}");
+            Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}, {average_decoder}");
             allresults.Add(results);
             tableSize += step;
         }
