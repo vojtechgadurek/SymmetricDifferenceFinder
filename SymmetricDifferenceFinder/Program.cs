@@ -115,7 +115,6 @@ public class Program
         const string filecall = "file-";
         const string generatedcall = "generate-";
 
-
         if (datasource.StartsWith(filecall))
         {
             data = LoadKmersFromFile(datasource.Substring(filecall.Length));
@@ -186,10 +185,12 @@ public class Program
 
             var results = new TestResult[nTests];
 
-            var op = new ParallelOptions() { MaxDegreeOfParallelism = 7 };
+            var op = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
             Parallel.ForEach(Enumerable.Range(0, nTests), op, (i) => { results[i] = DoOneTest((ulong)tableSize); });
 
-            Console.WriteLine($"table size finished {tableSize}");
+
+            var average_decoder = results.Average(x => x.IncorrectlyRecovered);
+            Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}");
             allresults.Add(results);
             tableSize += step;
         }
