@@ -157,7 +157,7 @@ public class Program
             EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
 
             var encoder = encoderFactory.Create();
-            encoder.Encode(data, data.Length);
+            encoder.Encode(hashsetData.ToArray(), hashsetData.Count());
 
             HPWDecoderFactory<XORTable> table = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
             var decoder = table.Create(encoder.GetTable());
