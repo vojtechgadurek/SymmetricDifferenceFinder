@@ -171,8 +171,10 @@ public class Program
             stopwatch.Restart();
             massager.Decode();
             stopwatch.Stop();
-            massager.GetDecodedValues().SymmetricExceptWith(hashsetData);
-            return new TestResult((int)tableSize, hashsetData.Count(), massager.GetDecodedValues().Count(), stopwatch.ElapsedMilliseconds);
+            var ans = new HashSet<ulong>(massager.GetDecodedValues());
+            ans.SymmetricExceptWith(hashsetData);
+            Console.WriteLine(ans.First());
+            return new TestResult((int)tableSize, hashsetData.Count(), ans.Count(), stopwatch.ElapsedMilliseconds);
         }
 
         int tableSize = starttablesize;
