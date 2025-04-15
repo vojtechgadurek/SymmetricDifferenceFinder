@@ -119,6 +119,7 @@ public class Program
         {
             data = LoadKmersFromFile(datasource.Substring(filecall.Length));
             hashsetData = new HashSet<ulong>(data);
+            if (data.Contains(0ul)) throw new ArgumentException("Data contains 0");
             Console.WriteLine(hashsetData.Count);
         }
         else if (datasource.StartsWith(generatedcall))
