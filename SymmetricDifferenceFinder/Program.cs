@@ -176,7 +176,6 @@ public class Program
             stopwatch.Stop();
             var ans = new HashSet<ulong>(massager.GetDecodedValues());
             ans.SymmetricExceptWith(hashsetData);
-            Console.WriteLine(ans.First());
             return new TestResult((int)tableSize, hashsetData.Count(), ans.Count(), stopwatch.ElapsedMilliseconds);
         }
 
@@ -194,7 +193,6 @@ public class Program
 
             var op = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
             Parallel.ForEach(Enumerable.Range(0, nTests), op, (i) => { results[i] = DoOneTest((ulong)tableSize); });
-
 
             var average_decoder = results.Average(x => x.IncorrectlyRecovered);
             Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}, {average_decoder}");
