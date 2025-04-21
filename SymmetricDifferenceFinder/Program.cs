@@ -232,11 +232,12 @@ public class Program
                 for(int i = 0; i < graph_steps; i++)
                 {
                     massager.HPWDecoder.Decode();
-                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
-                    if(massager.DecodingState == DecodingState.Success)
+                    if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
                     }
+                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
+                    
                 }
             }
             stopwatch.Stop();
