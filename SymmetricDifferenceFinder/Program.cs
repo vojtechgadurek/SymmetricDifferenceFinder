@@ -241,6 +241,9 @@ public class Program
 
 
                 }
+
+                massager.NStepsRecovery = decoderSteps;
+                massager.Decode();
             }
             stopwatch.Stop();
             var ans = new HashSet<ulong>(massager.GetDecodedValues());
