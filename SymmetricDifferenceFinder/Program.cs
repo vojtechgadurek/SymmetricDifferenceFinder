@@ -109,11 +109,18 @@ public class Program
         decoder.GetDecodedValues().UnionWith(newlyGuessed);
         Console.WriteLine(newlyGuessed.Count());
 
+        var ng = newlyGuessed.ToArray();
+        for (int index = 0; index < ng.Length; index++)
+        {
+            //AddHeader
+            ng[index] = (ng[index] << 2) | 0b11;
+        }
+
         //We should not forget that some of the values are already in the set
         //And we do not want to lose them
 
         //HPWWithOracle.Decode();
-        encoder.Encode(newlyGuessed.ToArray(), newlyGuessed.Count());
+        encoder.Encode(ng, newlyGuessed.Count());
     }
 
     public static void TestFixedData(Span<string> args)
