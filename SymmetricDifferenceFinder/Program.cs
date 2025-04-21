@@ -220,6 +220,7 @@ public class Program
             if(graph_recovery)
             {
                 massager.NStepsRecovery = decoderSteps;
+                massager.NStepsDecoder = 100;
                 for(int i = 0; i < graph_steps; i++)
                 {
                     GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
@@ -306,7 +307,7 @@ public class Program
                 encoder.Encode(data, data.Length);
 
                 massager.NStepsRecovery = 1000;
-                massager.NStepsDecoder = 100;
+                massager.NStepsDecoder = 1000;
                 massager.NStepsDecoderInitial = 1000;
                 massager.Decode();
 
