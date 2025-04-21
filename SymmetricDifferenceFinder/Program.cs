@@ -209,13 +209,13 @@ public class Program
             stopwatch.Restart();
 
             if (graph_recovery)
-                massager.NStepsDecoder = 100;
+                massager.NStepsRecovery = 100;
             
             massager.Decode();
 
             if(graph_recovery)
             {
-                massager.NStepsDecoder = decoderSteps;
+                massager.NStepsRecovery = decoderSteps;
                 for(int i = 0; i < graph_steps; i++)
                 {
                     GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
