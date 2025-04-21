@@ -148,6 +148,7 @@ public class Program
         int graph_steps = 0;
 
         if (graph_des[0].StartsWith("graph")){
+            graph_recovery = true;  
             max_distance = int.Parse(graph_des[1]);
             graph_steps = int.Parse(graph_des[2]);
             Console.WriteLine("graph");
