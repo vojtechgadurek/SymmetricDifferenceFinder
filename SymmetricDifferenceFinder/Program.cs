@@ -90,6 +90,29 @@ public class Program
 
     record struct TestResult(int TableSize, int NItems, int IncorrectlyRecovered, long time);
 
+
+    public static void GrapRecovery(HPWDecoder<XORTable> decoder, Encoder<XORTable> encoder, int kMerLength, int maxDistance, int minDistance)
+    {
+        Random random = new Random();
+        var newlyGuessed =
+            KMerUtils.DNAGraph.Recover.RecoverGraphCanonicalV3(
+                decoder.GetDecodedValues()
+                //RemoveHeaders
+                .Select(x => x >>> 2)
+                .ToArray(), kMerLength, maxDistance, minDistance, false
+                ).Where(_ => random.Next(0, 1) == 0).ToArray();
+
+
+
+        newlyGuessed.ToHashSet().SymmetricExceptWith(decoder.GetDecodedValues());
+
+        //We should not forget that some of the values are already in the set
+        //And we do not want to lose them
+
+        //HPWWithOracle.Decode();
+        encoder.Encode(newlyGuessed.ToArray(), newlyGuessed.Count());
+    }
+
     public static void TestFixedData(Span<string> args)
     {
         //ARGS
@@ -114,6 +137,18 @@ public class Program
 
         const string filecall = "file-";
         const string generatedcall = "generate-";
+
+        bool graph_recovery = bool.Parse(args[argscount++]);
+
+        int min_distance = 0;
+        int max_distance = 0;
+        int graph_steps = 0;
+        if (graph_recovery)
+        {
+            min_distance = int.Parse(args[argscount++]);
+            max_distance = int.Parse(args[argscount++]);
+            graph_steps = int.Parse(args[argscount++]);
+        }
 
         if (datasource.StartsWith(filecall))
         {
@@ -172,7 +207,25 @@ public class Program
             massager.NStepsRecovery =decoderSteps;
 
             stopwatch.Restart();
+
+            if (graph_recovery)
+                massager.NStepsDecoder = 100;
+            
             massager.Decode();
+
+            if(graph_recovery)
+            {
+                massager.NStepsDecoder = decoderSteps;
+                for(int i = 0; i < graph_steps; i++)
+                {
+                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
+                    massager.Decode();
+                    if(massager.DecodingState == DecodingState.Success)
+                    {
+                        break;
+                    }
+                }
+            }
             stopwatch.Stop();
             var ans = new HashSet<ulong>(massager.GetDecodedValues());
             ans.SymmetricExceptWith(hashsetData);
