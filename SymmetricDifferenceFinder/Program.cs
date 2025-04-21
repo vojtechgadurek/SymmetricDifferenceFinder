@@ -106,6 +106,8 @@ public class Program
 
         newlyGuessed.ToHashSet().ExceptWith(decoder.GetDecodedValues());
 
+        Console.WriteLine(newlyGuessed.Count());
+
         //We should not forget that some of the values are already in the set
         //And we do not want to lose them
 
