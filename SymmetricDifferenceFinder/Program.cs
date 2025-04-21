@@ -103,9 +103,11 @@ public class Program
                 ).Where(_ => random.Next(0, 1) == 0).ToArray();
 
 
-        var decodedValues = decoder.GetDecodedValues();
-
-
+        for (int index = 0; index < newlyGuessed.Length; index++)
+        {
+            //AddHeader
+            newlyGuessed[index] = (newlyGuessed[index] << 2) | 0b11;
+        }
 
 
         var ngh = newlyGuessed.ToHashSet();ngh.ExceptWith(decoder.GetDecodedValues());
@@ -113,18 +115,13 @@ public class Program
         decoder.GetDecodedValues().UnionWith(ngh);
         Console.WriteLine(ngh.Count());
 
-        var ng = ngh.ToArray();
-        for (int index = 0; index < ng.Length; index++)
-        {
-            //AddHeader
-            ng[index] = (ng[index] << 2) | 0b11;
-        }
+        
 
         //We should not forget that some of the values are already in the set
         //And we do not want to lose them
 
         //HPWWithOracle.Decode();
-        encoder.Encode(ng, ng.Count());
+        encoder.Encode(ngh.ToArray(), ngh.Count());
     }
 
     public static void TestFixedData(Span<string> args)
@@ -237,7 +234,8 @@ public class Program
                         break;
                     }
                     GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
-                    
+
+
                 }
             }
             stopwatch.Stop();
