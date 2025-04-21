@@ -103,13 +103,17 @@ public class Program
                 ).Where(_ => random.Next(0, 1) == 0).ToArray();
 
 
+        var decodedValues = decoder.GetDecodedValues();
 
-        newlyGuessed.ToHashSet().ExceptWith(decoder.GetDecodedValues());
 
-        decoder.GetDecodedValues().UnionWith(newlyGuessed);
-        Console.WriteLine(newlyGuessed.Count());
 
-        var ng = newlyGuessed.ToArray();
+
+        var ngh = newlyGuessed.ToHashSet();ngh.ExceptWith(decoder.GetDecodedValues());
+
+        decoder.GetDecodedValues().UnionWith(ngh);
+        Console.WriteLine(ngh.Count());
+
+        var ng = ngh.ToArray();
         for (int index = 0; index < ng.Length; index++)
         {
             //AddHeader
