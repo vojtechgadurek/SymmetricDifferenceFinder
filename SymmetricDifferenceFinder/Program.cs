@@ -228,7 +228,7 @@ public class Program
                 massager.NStepsDecoder = 100;
                 for(int i = 0; i < graph_steps; i++)
                 {
-                    massager.HPWDecoder.Decode();
+                    massager.Decode();
                     if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
