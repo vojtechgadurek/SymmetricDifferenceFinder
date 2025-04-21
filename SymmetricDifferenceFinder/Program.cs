@@ -224,7 +224,7 @@ public class Program
                 for(int i = 0; i < graph_steps; i++)
                 {
                     GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
-                    massager.Decode();
+                    massager.HPWDecoder.Decode();
                     if(massager.DecodingState == DecodingState.Success)
                     {
                         break;
