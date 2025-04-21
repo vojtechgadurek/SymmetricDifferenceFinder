@@ -218,9 +218,6 @@ public class Program
             massager.NStepsRecovery =decoderSteps;
 
             stopwatch.Restart();
-
-            if (graph_recovery)
-                massager.NStepsRecovery = 100;
             
             massager.Decode();
 
@@ -230,8 +227,8 @@ public class Program
                 massager.NStepsDecoder = 100;
                 for(int i = 0; i < graph_steps; i++)
                 {
-                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
                     massager.HPWDecoder.Decode();
+                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
                     if(massager.DecodingState == DecodingState.Success)
                     {
                         break;
