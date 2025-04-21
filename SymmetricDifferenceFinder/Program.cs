@@ -241,6 +241,7 @@ public class Program
             stopwatch.Stop();
             var ans = new HashSet<ulong>(massager.GetDecodedValues());
             ans.SymmetricExceptWith(hashsetData);
+            Console.WriteLine(ans.Count());
             return new TestResult((int)tableSize, hashsetData.Count(), ans.Count(), stopwatch.ElapsedMilliseconds);
         }
 
