@@ -219,7 +219,11 @@ public class Program
             massager.NStepsRecovery =decoderSteps;
 
             stopwatch.Restart();
-            
+
+            if (graph_recovery)
+            {
+                massager.NStepsRecovery = 200;
+            }
             massager.Decode();
 
             if(graph_recovery)
