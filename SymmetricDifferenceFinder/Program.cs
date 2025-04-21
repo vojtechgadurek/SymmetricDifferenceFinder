@@ -138,18 +138,17 @@ public class Program
         const string filecall = "file-";
         const string generatedcall = "generate-";
 
-        bool graph_recovery = bool.Parse(args[argscount++]);
+        bool graph_recovery = false;
+        string[] graph_des =args[argscount++].Split("-");
 
         int min_distance = 0;
         int max_distance = 0;
         int graph_steps = 0;
-        if (graph_recovery)
-        {
-            min_distance = int.Parse(args[argscount++]);
-            max_distance = int.Parse(args[argscount++]);
-            graph_steps = int.Parse(args[argscount++]);
-        }
 
+        if (graph_des[0].StartsWith("graph")){
+            max_distance = int.Parse(graph_des[1]);
+            graph_steps = int.Parse(graph_des[2]);  
+        }
         if (datasource.StartsWith(filecall))
         {
             data = LoadKmersFromFile(datasource.Substring(filecall.Length));
