@@ -124,7 +124,7 @@ public class Program
         //And we do not want to lose them
 
         //HPWWithOracle.Decode();
-        encoder.Encode(ng, newlyGuessed.Count());
+        encoder.Encode(ng, ng.Count());
     }
 
     public static void TestFixedData(Span<string> args)
