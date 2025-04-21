@@ -104,7 +104,7 @@ public class Program
 
 
 
-        newlyGuessed.ToHashSet().SymmetricExceptWith(decoder.GetDecodedValues());
+        newlyGuessed.ToHashSet().ExceptWith(decoder.GetDecodedValues());
 
         //We should not forget that some of the values are already in the set
         //And we do not want to lose them
