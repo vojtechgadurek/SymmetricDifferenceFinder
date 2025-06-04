@@ -481,7 +481,9 @@ public class Program
                 {
                     var pure = massager.HPWDecoder.GetPure();
                     HashSet<ulong> decoded = new();
+                    Console.WriteLine($"Step {i} of {graph_steps} with {pure.Count()} pure values");
                     massager.HPWDecoder.OuterDecode(pure, new HashSet<ulong>(), decoded);
+                    Console.WriteLine($"Decoded {decoded.Count()} values");
                     if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
