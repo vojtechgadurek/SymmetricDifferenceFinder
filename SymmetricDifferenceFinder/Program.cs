@@ -264,8 +264,7 @@ public class Program
         int hash_length = 0;
         double bloom_error = 0.01;
         int bloom_number_hashfunc = 0;
-        double p = 0.01;
-
+        double p = args[argscount++].StartsWith("p-") ? double.Parse(args[argscount++].Substring(2)) : 0.01;
 
 
         var filter = args[argscount++].Split("-");
@@ -304,7 +303,6 @@ public class Program
                 bloom_error = double.Parse(filter[2]);
                 ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
                 bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(length));
-                p = double.Parse(filter[4]);
 
                 var hf = new TabulationFamily();
                 var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
@@ -330,7 +328,6 @@ public class Program
             {
                 nearlyperfectpredictor = true;
                 hash_length = int.Parse(filter[1]);
-                p = double.Parse(filter[2]);
                 var hf = new TabulationFamily();
                 var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
 
@@ -445,8 +442,8 @@ public class Program
                 encoder2 = encoder2Factory.Create();
                 var decoder2Factory = new HPWDecoderFactory<XORTable>(schemes2.Select(x => x.Create()));
                 decoder2 = decoder2Factory.Create(encoder2.GetTable());
-                var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
-                encoder2.Encode(dataselected, dataselected.Length);
+                //var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
+                //encoder2.Encode(dataselected, dataselected.Length);
             }
 
 
@@ -464,18 +461,19 @@ public class Program
             {
                 massager.NStepsRecovery = 200;
             }
+
+            var dataselected = hashsetData.Where(SelectWithProbability).ToArray();
+            Console.WriteLine("Seed size " + dataselected.Length);
+            encoder.Encode(dataselected, dataselected.Length);
+            decoder.GetDecodedValues().UnionWith(dataselected);
+
+
+
             massager.Decode();
 
             if (graph_recovery)
             {
-                if (nearlyperfectpredictor)
-                {
-                    var dataselected = hashsetData.Where(SelectWithProbability).ToArray();
-                    Console.WriteLine("Seed size " + dataselected.Length);
-                    encoder.Encode(dataselected, dataselected.Length);
-                    decoder.GetDecodedValues().UnionWith(dataselected);
 
-                }
                 massager.NStepsRecovery = decoderSteps;
                 massager.NStepsDecoder = 100;
                 for (int i = 0; i < graph_steps; i++)
