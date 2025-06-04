@@ -479,7 +479,6 @@ public class Program
                 massager.NStepsDecoder = 100;
                 for (int i = 0; i < graph_steps; i++)
                 {
-                    massager.Decode();
                     var pure = massager.HPWDecoder.GetPure();
                     HashSet<ulong> decoded = new();
                     massager.HPWDecoder.OuterDecode(pure, new HashSet<ulong>(), decoded);
