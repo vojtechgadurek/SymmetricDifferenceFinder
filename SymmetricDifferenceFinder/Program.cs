@@ -301,7 +301,7 @@ public class Program
                 }
                 hash_length = int.Parse(filter[1]);
                 bloom_error = double.Parse(filter[2]);
-                ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
+                ulong bloom_size = (ulong)(1 / bloom_error) * length;
                 bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(length));
 
                 var hf = new TabulationFamily();
