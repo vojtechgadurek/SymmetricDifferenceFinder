@@ -468,7 +468,7 @@ public class Program
             decoder.GetDecodedValues().UnionWith(dataselected);
             massager.Decode();
 
-            if (nearlyperfectpredictor)
+            if (nearlyperfectpredictor & false)
             {
                 for (int i = 0; i < 10; i++)
                 {
