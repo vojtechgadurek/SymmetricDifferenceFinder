@@ -287,7 +287,7 @@ public class Program
                 hash_length = int.Parse(graph_des[1]);
                 bloom_error = double.Parse(graph_des[2]);
                 ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
-                bloom_number_hashfunc = int.Parse(graph_des[3]);
+                bloom_number_hashfunc = (int)(double.Parse(graph_des[3]) * Math.Log2(length));
                 p = double.Parse(graph_des[4]);
 
                 var hf = new TabulationFamily();
