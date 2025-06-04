@@ -465,12 +465,20 @@ public class Program
             Console.WriteLine("Recovered size " + dataselected.Length);
 
             encoder.Encode(dataselected, dataselected.Length);
-
             decoder.GetDecodedValues().UnionWith(dataselected);
-
-
-
             massager.Decode();
+
+            if (nearlyperfectpredictor)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    var data_recovered = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
+                            (x) => IsInFilter(x << 2 | 0b11), 31, decoder.GetDecodedValues().Select(x => x >>> 2).ToArray()).Select(x => (x << 2) | 0b11).ToArray();
+                    encoder.Encode(data_recovered, data_recovered.Length);
+                    decoder.GetDecodedValues().SymmetricExceptWith(data_recovered);
+                }
+            }
+
 
             if (graph_recovery)
             {
@@ -479,26 +487,13 @@ public class Program
                 massager.NStepsDecoder = 100;
                 for (int i = 0; i < graph_steps; i++)
                 {
-                    var pure = massager.HPWDecoder.GetPure();
-                    HashSet<ulong> decoded = new();
-                    Console.WriteLine($"Step {i} of {graph_steps} with {pure.Count()} pure values");
-                    massager.HPWDecoder.OuterDecode(pure, new HashSet<ulong>(), decoded);
-                    Console.WriteLine($"Decoded {decoded.Count()} values");
+                    massager.Decode();
                     if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
                     }
-                    if (nearlyperfectpredictor)
-                    {
-                        var predicted = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
-                            (x) => (IsInFilter(x << 2 | 0b11)), 31, decoded.Select(x => x >>> 2).ToArray()).Select(x => (x << 2) | 0b11).ToArray();
+                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
 
-                        predicted = predicted.Where(x => !massager.HPWDecoder.GetDecodedValues().Contains(x)).ToArray();
-                        Console.WriteLine($"Predicted {predicted.Length} values");
-                        encoder.Encode(predicted, predicted.Count());
-                        decoder.GetDecodedValues().UnionWith(predicted);
-                    }
-                    //GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
 
                 }
 
