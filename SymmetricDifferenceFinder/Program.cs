@@ -492,7 +492,7 @@ public class Program
                         var predicted = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
                             (x) => (IsInFilter(x << 2 | 0b11)), 31, decoded.Select(x => x >>> 2).ToArray());
 
-                        predicted = predicted.Where(x => massager.HPWDecoder.GetDecodedValues().Contains(x)).ToArray();
+                        predicted = predicted.Where(x => !massager.HPWDecoder.GetDecodedValues().Contains(x)).ToArray();
                         Console.WriteLine($"Predicted {predicted.Length} values");
                         encoder.Encode(predicted, predicted.Count());
                         decoder.GetDecodedValues().UnionWith(predicted);
