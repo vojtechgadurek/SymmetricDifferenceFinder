@@ -15,6 +15,95 @@ using Microsoft.Diagnostics.Tracing.Parsers.AspNet;
 using System.Runtime.InteropServices;
 
 namespace SymmetricDifferenceFinder;
+public static class SetMembership
+{
+    public interface ITable<TInput>
+    {
+        void Add(ulong index, TInput item);
+        void Remove(ulong index, TInput item);
+        bool Get(ulong index);
+    }
+
+    public struct BasicTable : ITable<ulong>
+    {
+        ulong[] _table;
+        Func<ulong, ulong> _hashFunction;
+        public BasicTable(ulong size, Func<ulong, ulong> hashFunction)
+        {
+            _table = new ulong[size];
+            _hashFunction = hashFunction;
+        }
+        public void Add(ulong index, ulong item)
+        {
+            _table[index] += _hashFunction(item);
+        }
+        public void Remove(ulong index, ulong item)
+        {
+            _table[index] -= _hashFunction(item);
+        }
+
+        public bool Get(ulong index)
+        {
+            return _table[index] != 0;
+        }
+    }
+
+    public class BloomFilter<T, TTable>
+        where TTable : struct, ITable<T>
+    {
+        private readonly TTable _table;
+        private readonly ulong _size;
+        private readonly ulong _numberHashFunctions;
+        private readonly Func<T, ulong>[] _hashFunctions;
+        private readonly HashSet<ulong> _hashIndices = new HashSet<ulong>();
+
+        public BloomFilter(ulong size, Func<T, ulong>[] hashFunctions, TTable table)
+        {
+            _size = size;
+            _table = table;
+            _numberHashFunctions = (ulong)hashFunctions.Length;
+            _hashFunctions = hashFunctions;
+        }
+        ulong Hash(T item, ulong index)
+        {
+            return _hashFunctions[index](item);
+        }
+
+        public void Add(T item)
+        {
+
+            for (ulong i = 0; i < _numberHashFunctions; i++)
+            {
+                ulong index = Hash(item, i);
+                _table.Add(index, item);
+            }
+        }
+
+        public void Remove(T item)
+        {
+            for (ulong i = 0; i < _numberHashFunctions; i++)
+            {
+                ulong index = Hash(item, i);
+                _table.Remove(index, item);
+            }
+        }
+
+        public bool Contains(T item)
+        {
+            for (ulong i = 0; i < _numberHashFunctions; i++)
+            {
+                ulong index = Hash(item, i);
+                if (_table.Get(index))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+}
+
+
 public class Program
 {
 
@@ -91,8 +180,12 @@ public class Program
     record struct TestResult(int TableSize, int NItems, int IncorrectlyRecovered, long time);
 
 
-    public static void GrapRecovery(HPWDecoder<XORTable> decoder, Encoder<XORTable> encoder, int kMerLength, int maxDistance, int minDistance)
+    public static void GrapRecovery(HPWDecoder<XORTable> decoder, Encoder<XORTable> encoder, int kMerLength, int maxDistance, int minDistance, Func<ulong, bool>? IsInSet)
     {
+        if (IsInSet == null)
+        {
+            IsInSet = (x) => true;
+        }
         Random random = new Random();
         var newlyGuessed =
             KMerUtils.DNAGraph.Recover.RecoverGraphCanonicalV3(
@@ -110,12 +203,13 @@ public class Program
         }
 
 
-        var ngh = newlyGuessed.ToHashSet();ngh.ExceptWith(decoder.GetDecodedValues());
+        var ngh = newlyGuessed.Where(IsInSet).ToHashSet();
+        ngh.ExceptWith(decoder.GetDecodedValues());
 
         decoder.GetDecodedValues().UnionWith(ngh);
         Console.WriteLine(ngh.Count());
 
-        
+
 
         //We should not forget that some of the values are already in the set
         //And we do not want to lose them
@@ -150,18 +244,113 @@ public class Program
         const string generatedcall = "generate-";
 
         bool graph_recovery = false;
-        string[] graph_des =args[argscount++].Split("-");
+
+        bool nearlyperfectpredictor = false;
+        string[] graph_des = args[argscount++].Split("-");
 
         int min_distance = 0;
         int max_distance = 0;
         int graph_steps = 0;
 
-        if (graph_des[0].StartsWith("graph")){
-            graph_recovery = true;  
+        if (graph_des[0].StartsWith("graph"))
+        {
+            graph_recovery = true;
             max_distance = int.Parse(graph_des[1]);
             graph_steps = int.Parse(graph_des[2]);
             Console.WriteLine("graph");
         }
+
+        int hash_length = 0;
+        int bloom_size = 0;
+        int bloom_number_hashfunc = 0;
+        double p = 0.01;
+
+
+        Func<ulong, bool> IsInFilter = (ulong item) =>
+        {
+            return true;
+        };
+        Action<ulong> AddToFilter = (ulong item) =>
+        {
+            //Do nothing
+        };
+
+        var filter = args[argscount++].Split("-");
+
+
+
+        if (filter[0].StartsWith("bloomfilter"))
+        {
+            nearlyperfectpredictor = true;
+            hash_length = int.Parse(graph_des[1]);
+            bloom_size = int.Parse(graph_des[2]);
+            bloom_number_hashfunc = int.Parse(graph_des[3]);
+            p = double.Parse(graph_des[4]);
+
+            var hf = new TabulationFamily();
+
+
+            var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
+                (ulong)bloom_size,
+                Enumerable.Range(0, bloom_number_hashfunc)
+                    .Select(x => hf.GetScheme((ulong)bloom_size, 0).Create().Compile())
+                    .ToArray(),
+                new SetMembership.BasicTable((ulong)bloom_size, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
+
+            AddToFilter = (ulong item) =>
+            {
+                bloomfilter.Add(item);
+            };
+            IsInFilter = (ulong item) =>
+            {
+                return bloomfilter.Contains(item);
+            };
+        }
+
+
+
+        if (filter[0].StartsWith("hashfilter"))
+        {
+            nearlyperfectpredictor = true;
+            hash_length = int.Parse(graph_des[1]);
+            p = double.Parse(graph_des[2]);
+            var hf = new TabulationFamily();
+            var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
+
+            var hashes = new HashSet<ulong>();
+
+            AddToFilter = (ulong item) =>
+            {
+                var hash = hashFunction(item);
+                if (hashes.Contains(hash))
+                {
+                    hashes.Remove(hash);
+                }
+                else
+                {
+                    hashes.Add(hash);
+
+
+                }
+            };
+
+            IsInFilter = (ulong item) =>
+            {
+                var hash = hashFunction(item);
+                return hashes.Contains(hash);
+            };
+        }
+
+        var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
+
+
+        bool SelectWithProbability(ulong item)
+        {
+            return probhashfunc(item) == 1;
+        }
+
+
+
         if (datasource.StartsWith(filecall))
         {
             data = LoadKmersFromFile(datasource.Substring(filecall.Length));
@@ -198,46 +387,72 @@ public class Program
 
         Stopwatch stopwatch = new();
 
-
         TestResult DoOneTest(ulong tableSize)
         {
-
+            var table2size = (ulong)(tableSize * (p) * (1.22 + 0.08));
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
+            List<IHashFunctionScheme> schemes2 = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, table2size, 0)).ToList();
 
-            EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), 
+            EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize),
                 size => new XORTable(size));
 
+
+
             var encoder = encoderFactory.Create();
+
             encoder.Encode(hashsetData.ToArray(), hashsetData.Count());
 
             HPWDecoderFactory<XORTable> table = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
             var decoder = table.Create(encoder.GetTable());
 
-            Massager<KMerStringFactory, CanonicalOrder> massager = 
+            Massager<KMerStringFactory, CanonicalOrder> massager =
                 new Massager<KMerStringFactory, CanonicalOrder>(decoder, schemes.Select(x => x.Create().Compile()));
 
-            massager.NStepsRecovery =decoderSteps;
+            massager.NStepsRecovery = decoderSteps;
+
+            Encoder<XORTable>? encoder2 = null;
+            HPWDecoder<XORTable> decoder2 = null;
+
+
+            if (nearlyperfectpredictor)
+            {
+                var encoder2Factory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes2, (int)table2size), size => new XORTable(size));
+                encoder2 = encoder2Factory.Create();
+                var decoder2Factory = new HPWDecoderFactory<XORTable>(schemes2.Select(x => x.Create()));
+                decoder2 = decoder2Factory.Create(encoder2.GetTable());
+                var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
+                encoder2.Encode(dataselected, dataselected.Length);
+            }
+
+
 
             stopwatch.Restart();
+            if (nearlyperfectpredictor && false)
+            {
+                decoder2.Decode();
+                var dV2 = decoder2.GetDecodedValues();
+                var a = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(IsInFilter, 31, dV2.Select(x => x >>> 2).ToArray());
+                encoder2.Encode(a, a.Count());
 
+            }
             if (graph_recovery)
             {
                 massager.NStepsRecovery = 200;
             }
             massager.Decode();
 
-            if(graph_recovery)
+            if (graph_recovery)
             {
                 massager.NStepsRecovery = decoderSteps;
                 massager.NStepsDecoder = 100;
-                for(int i = 0; i < graph_steps; i++)
+                for (int i = 0; i < graph_steps; i++)
                 {
                     massager.Decode();
                     if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
                     }
-                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance);
+                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
 
 
                 }
@@ -338,7 +553,7 @@ public class Program
         return OneTest;
     }
 
-    public static Func<double, double> TestMul(IEnumerable<IHashFunctionScheme> schemes, int tableSize, int nTests, Func<int, ulong[]> dataProvider, 
+    public static Func<double, double> TestMul(IEnumerable<IHashFunctionScheme> schemes, int tableSize, int nTests, Func<int, ulong[]> dataProvider,
         (int recovery, int decoder, int initial) config)
     {
         EncoderFactory<XORTable> encoderFactory = new EncoderFactory<XORTable>(new EncoderConfiguration<XORTable>(schemes, (int)tableSize), size => new XORTable(size));
@@ -365,7 +580,7 @@ public class Program
 
 
                 massager.GetDecodedValues().SymmetricExceptWith(data);
-                if (massager.GetDecodedValues().Count() == 0 ) countSucc+=1;
+                if (massager.GetDecodedValues().Count() == 0) countSucc += 1;
             }
             return countSucc / nTests;
         }
@@ -407,7 +622,7 @@ public class Program
         });
         return result;
     }
-    public static List<(int,double, double, long)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize, 
+    public static List<(int, double, double, long)> TestDifferentKMerLengthsMul(int startKmerLength, int endKmerLength, double step, int nSteps, int nTests, int tableSize,
         IEnumerable<IHashFunctionScheme> hfs,
         (int, int, int) config,
         double startmul,
@@ -417,7 +632,7 @@ public class Program
     {
 
         List<int> values = new();
-        List<(int,double, double, long)> result = new();
+        List<(int, double, double, long)> result = new();
 
 
         while (startKmerLength < endKmerLength)
@@ -444,11 +659,13 @@ public class Program
                 var r = f(i);
                 stop.Stop();
 
-                lock (result) {
+                lock (result)
+                {
                     var res = (startKmerLength, i, r, stop.ElapsedMilliseconds);
                     Console.WriteLine(res);
                     result.Add(res);
-                };
+                }
+                ;
             }
         });
         return result;
@@ -527,7 +744,7 @@ public class Program
             double endmul = double.Parse(args[argscount++]);
             double stepmul = double.Parse(args[argscount++]);
 
-            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes,c, startmul, endmul, stepmul, nthreads);
+            var result = TestDifferentKMerLengthsMul((int)minKmerLength, (int)maxKmerLength, step, nSteps, nTests, (int)tableSize, hashFunctionTypes, c, startmul, endmul, stepmul, nthreads);
             File.WriteAllText(answerFile, String.Join("\n", result.Select(x => $"{x.Item1} {x.Item2} {x.Item3} {x.Item4}")));
             return;
         }
