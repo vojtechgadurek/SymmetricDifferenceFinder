@@ -484,6 +484,13 @@ public class Program
                     {
                         break;
                     }
+                    if (nearlyperfectpredictor)
+                    {
+                        var predicted = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
+                            (x) => (IsInFilter(x << 2 | 0b11)), 31, decoder.GetDecodedValues().Select(x => x >>> 2).ToArray());
+                        encoder.Encode(predicted, predicted.Count());
+                        decoder.GetDecodedValues().UnionWith(predicted);
+                    }
                     GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
 
 
