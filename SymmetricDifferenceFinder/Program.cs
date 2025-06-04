@@ -294,15 +294,16 @@ public class Program
                     Console.WriteLine($"Error in Bloom filter creation: {e.Message}");
                     throw;
                 }
-                if (graph_des.Length < 5)
+                if (filter.Length < 5)
                 {
+
                     throw new ArgumentException("Bloom filter requires 5 parameters: bloomfilter-hash_length-bloom_error-bloom_number_hashfunc-p");
                 }
-                hash_length = int.Parse(graph_des[1]);
-                bloom_error = double.Parse(graph_des[2]);
+                hash_length = int.Parse(filter[1]);
+                bloom_error = double.Parse(filter[2]);
                 ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
-                bloom_number_hashfunc = (int)(double.Parse(graph_des[3]) * Math.Log2(length));
-                p = double.Parse(graph_des[4]);
+                bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(length));
+                p = double.Parse(filter[4]);
 
                 var hf = new TabulationFamily();
                 var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
@@ -327,8 +328,8 @@ public class Program
             if (filter[0].StartsWith("hashfilter"))
             {
                 nearlyperfectpredictor = true;
-                hash_length = int.Parse(graph_des[1]);
-                p = double.Parse(graph_des[2]);
+                hash_length = int.Parse(filter[1]);
+                p = double.Parse(filter[2]);
                 var hf = new TabulationFamily();
                 var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
 
