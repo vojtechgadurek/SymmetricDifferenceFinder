@@ -467,7 +467,7 @@ public class Program
 
             dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(IsInFilter, 31, dataselected.Select(x => x >>> 2).ToArray())
                 .Select(x => (x << 2) | 0b11)
-                .Where(x => IsInFilter(x))
+                .Union(dataselected)
                 .ToArray();
 
             Console.WriteLine("Recovered size " + dataselected.Length);
