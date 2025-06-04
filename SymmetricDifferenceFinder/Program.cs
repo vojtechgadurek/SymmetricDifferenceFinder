@@ -470,6 +470,8 @@ public class Program
                 .Where(x => IsInFilter(x))
                 .ToArray();
 
+            Console.WriteLine("Recovered size " + dataselected.Length);
+
             encoder.Encode(dataselected, dataselected.Length);
 
             decoder.GetDecodedValues().UnionWith(dataselected);
