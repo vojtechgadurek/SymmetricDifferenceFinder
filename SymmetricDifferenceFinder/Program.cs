@@ -266,20 +266,21 @@ public class Program
         double p = 0.01;
 
 
-        Func<ulong, bool> IsInFilter = (ulong item) =>
-        {
-            return true;
-        };
-        Action<ulong> AddToFilter = (ulong item) =>
-        {
-            //Do nothing
-        };
 
         var filter = args[argscount++].Split("-");
 
 
-        void CreateFilter(ulong length)
+        (Action<ulong> add, Func<ulong, bool> testMembership) CreateFilter(ulong length)
         {
+
+            Action<ulong> AddToFilter = (ulong item) =>
+            {
+                //Do nothing
+            };
+            Func<ulong, bool> IsInFilter = (ulong item) =>
+            {
+                return true;
+            };
 
             if (filter[0].StartsWith("bloomfilter"))
             {
@@ -341,6 +342,7 @@ public class Program
                     return hashes.Contains(hash);
                 };
             }
+            return (AddToFilter, IsInFilter);
         }
 
         var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
@@ -391,7 +393,7 @@ public class Program
 
         TestResult DoOneTest(ulong tableSize)
         {
-            CreateFilter(tableSize);
+            var (AddToFilter, IsInFilter) = CreateFilter(tableSize);
             var table2size = (ulong)(tableSize * (p) * (1.22 + 0.08));
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
             List<IHashFunctionScheme> schemes2 = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, table2size, 0)).ToList();
