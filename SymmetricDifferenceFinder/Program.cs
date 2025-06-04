@@ -204,10 +204,11 @@ public class Program
 
 
         var ngh = newlyGuessed.Where(IsInSet).ToHashSet();
+        Console.WriteLine("Newly guessed" + newlyGuessed.ToHashSet().Count());
         ngh.ExceptWith(decoder.GetDecodedValues());
 
         decoder.GetDecodedValues().UnionWith(ngh);
-        Console.WriteLine(ngh.Count());
+        Console.WriteLine("Decoded" + ngh.Count().ToString());
 
 
 
