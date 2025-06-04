@@ -467,6 +467,13 @@ public class Program
 
             if (graph_recovery)
             {
+                if (nearlyperfectpredictor)
+                {
+                    var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
+                    encoder.Encode(dataselected, dataselected.Length);
+                    decoder.GetDecodedValues().UnionWith(dataselected);
+
+                }
                 massager.NStepsRecovery = decoderSteps;
                 massager.NStepsDecoder = 100;
                 for (int i = 0; i < graph_steps; i++)
