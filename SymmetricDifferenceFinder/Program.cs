@@ -264,10 +264,10 @@ public class Program
         int hash_length = 0;
         double bloom_error = 0.01;
         int bloom_number_hashfunc = 0;
-        double p = args[argscount++].StartsWith("p-") ? double.Parse(args[argscount++].Substring(2)) : 0.01;
 
 
         var filter = args[argscount++].Split("-");
+        double p = double.Parse(args[argscount++].Substring(2));
 
 
         (Action<ulong> add, Func<ulong, bool> testMembership) CreateFilter(ulong length)
