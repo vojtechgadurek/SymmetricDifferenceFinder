@@ -471,6 +471,7 @@ public class Program
                 if (nearlyperfectpredictor)
                 {
                     var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
+                    Console.WriteLine("Seed size " + dataselected.Length);
                     encoder.Encode(dataselected, dataselected.Length);
                     decoder.GetDecodedValues().UnionWith(dataselected);
 
