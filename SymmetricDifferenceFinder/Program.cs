@@ -465,7 +465,7 @@ public class Program
             var dataselected = hashsetData.Where(SelectWithProbability).ToArray();
             Console.WriteLine("Seed size " + dataselected.Length);
 
-            dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(IsInFilter, 31, dataselected.Select(x => x >>> 2).ToArray())
+            dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected.Select(x => x >>> 2).ToArray())
                 .Select(x => (x << 2) | 0b11)
                 .Union(dataselected)
                 .ToArray();
