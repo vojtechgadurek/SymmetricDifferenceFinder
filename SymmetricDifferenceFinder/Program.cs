@@ -93,8 +93,7 @@ public static class SetMembership
             for (ulong i = 0; i < _numberHashFunctions; i++)
             {
                 ulong index = Hash(item, i);
-                Console.WriteLine($"Checking index {index} for item {item}");
-                if (_table.Get(index))
+                if (!_table.Get(index))
                 {
                     return false;
                 }
