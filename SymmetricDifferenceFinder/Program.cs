@@ -407,7 +407,7 @@ public class Program
 
             bool SelectWithProbability(ulong item)
             {
-                return probhashfunc(item) == 1;
+                return probhashfunc(item) == 0;
             }
 
             var table2size = (ulong)(tableSize * (p) * (1.22 + 0.08));
@@ -470,7 +470,7 @@ public class Program
             {
                 if (nearlyperfectpredictor)
                 {
-                    var dataselected = hashsetData.Where(x => SelectWithProbability(x)).ToArray();
+                    var dataselected = hashsetData.Where(SelectWithProbability).ToArray();
                     Console.WriteLine("Seed size " + dataselected.Length);
                     encoder.Encode(dataselected, dataselected.Length);
                     decoder.GetDecodedValues().UnionWith(dataselected);
