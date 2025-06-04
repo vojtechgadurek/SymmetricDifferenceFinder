@@ -294,10 +294,10 @@ public class Program
                     Console.WriteLine($"Error in Bloom filter creation: {e.Message}");
                     throw;
                 }
-                if (filter.Length < 5)
+                if (filter.Length < 4)
                 {
 
-                    throw new ArgumentException("Bloom filter requires 5 parameters: bloomfilter-hash_length-bloom_error-bloom_number_hashfunc-p");
+                    throw new ArgumentException("Bloom filter requires 4 parameters: bloomfilter-hash_length-bloom_error-bloom_number_hashfunc-p");
                 }
                 hash_length = int.Parse(filter[1]);
                 bloom_error = double.Parse(filter[2]);
