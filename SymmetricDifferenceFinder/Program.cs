@@ -285,15 +285,7 @@ public class Program
             if (filter[0].StartsWith("bloomfilter"))
             {
                 nearlyperfectpredictor = true;
-                try
-                {
-                    length = (ulong)Math.Pow(2, Math.Ceiling(Math.Log2(length)));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error in Bloom filter creation: {e.Message}");
-                    throw;
-                }
+
                 if (filter.Length < 4)
                 {
 
@@ -302,7 +294,7 @@ public class Program
                 hash_length = int.Parse(filter[1]);
                 bloom_error = double.Parse(filter[2]);
                 ulong bloom_size = (ulong)(1 / bloom_error) * length;
-                bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(length));
+                bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(1 / bloom_error));
 
                 var hf = new TabulationFamily();
                 var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
