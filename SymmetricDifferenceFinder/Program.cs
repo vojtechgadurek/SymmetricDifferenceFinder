@@ -360,13 +360,6 @@ public class Program
             return (AddToFilter, IsInFilter);
         }
 
-        var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
-
-
-        bool SelectWithProbability(ulong item)
-        {
-            return probhashfunc(item) == 1;
-        }
 
 
 
@@ -409,6 +402,14 @@ public class Program
         TestResult DoOneTest(ulong tableSize)
         {
             var (AddToFilter, IsInFilter) = CreateFilter(tableSize);
+            var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
+
+
+            bool SelectWithProbability(ulong item)
+            {
+                return probhashfunc(item) == 1;
+            }
+
             var table2size = (ulong)(tableSize * (p) * (1.22 + 0.08));
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
             List<IHashFunctionScheme> schemes2 = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, table2size, 0)).ToList();
