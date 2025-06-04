@@ -261,7 +261,7 @@ public class Program
         }
 
         int hash_length = 0;
-        int bloom_size = 0;
+        double bloom_error = 0.01;
         int bloom_number_hashfunc = 0;
         double p = 0.01;
 
@@ -278,67 +278,69 @@ public class Program
         var filter = args[argscount++].Split("-");
 
 
-
-        if (filter[0].StartsWith("bloomfilter"))
+        void CreateFilter(ulong length)
         {
-            nearlyperfectpredictor = true;
-            hash_length = int.Parse(graph_des[1]);
-            bloom_size = int.Parse(graph_des[2]);
-            bloom_number_hashfunc = int.Parse(graph_des[3]);
-            p = double.Parse(graph_des[4]);
 
-            var hf = new TabulationFamily();
-
-
-            var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
-                (ulong)bloom_size,
-                Enumerable.Range(0, bloom_number_hashfunc)
-                    .Select(x => hf.GetScheme((ulong)bloom_size, 0).Create().Compile())
-                    .ToArray(),
-                new SetMembership.BasicTable((ulong)bloom_size, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
-
-            AddToFilter = (ulong item) =>
+            if (filter[0].StartsWith("bloomfilter"))
             {
-                bloomfilter.Add(item);
-            };
-            IsInFilter = (ulong item) =>
-            {
-                return bloomfilter.Contains(item);
-            };
-        }
+                nearlyperfectpredictor = true;
+                hash_length = int.Parse(graph_des[1]);
+                bloom_error = double.Parse(graph_des[2]);
+                ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
+                bloom_number_hashfunc = int.Parse(graph_des[3]);
+                p = double.Parse(graph_des[4]);
 
+                var hf = new TabulationFamily();
+                var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
+                    (ulong)bloom_size,
+                    Enumerable.Range(0, bloom_number_hashfunc)
+                        .Select(x => hf.GetScheme((ulong)bloom_size, 0).Create().Compile())
+                        .ToArray(),
+                    new SetMembership.BasicTable((ulong)bloom_size, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
 
-
-        if (filter[0].StartsWith("hashfilter"))
-        {
-            nearlyperfectpredictor = true;
-            hash_length = int.Parse(graph_des[1]);
-            p = double.Parse(graph_des[2]);
-            var hf = new TabulationFamily();
-            var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
-
-            var hashes = new HashSet<ulong>();
-
-            AddToFilter = (ulong item) =>
-            {
-                var hash = hashFunction(item);
-                if (hashes.Contains(hash))
+                AddToFilter = (ulong item) =>
                 {
-                    hashes.Remove(hash);
-                }
-                else
+                    bloomfilter.Add(item);
+                };
+                IsInFilter = (ulong item) =>
                 {
-                    hashes.Add(hash);
+                    return bloomfilter.Contains(item);
+                };
+            }
 
 
-                }
-            };
 
-            IsInFilter = (ulong item) =>
+            if (filter[0].StartsWith("hashfilter"))
             {
-                var hash = hashFunction(item);
-                return hashes.Contains(hash);
-            };
+                nearlyperfectpredictor = true;
+                hash_length = int.Parse(graph_des[1]);
+                p = double.Parse(graph_des[2]);
+                var hf = new TabulationFamily();
+                var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
+
+                var hashes = new HashSet<ulong>();
+
+                AddToFilter = (ulong item) =>
+                {
+                    var hash = hashFunction(item);
+                    if (hashes.Contains(hash))
+                    {
+                        hashes.Remove(hash);
+                    }
+                    else
+                    {
+                        hashes.Add(hash);
+
+
+                    }
+                };
+
+                IsInFilter = (ulong item) =>
+                {
+                    var hash = hashFunction(item);
+                    return hashes.Contains(hash);
+                };
+            }
         }
 
         var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
@@ -389,6 +391,7 @@ public class Program
 
         TestResult DoOneTest(ulong tableSize)
         {
+            CreateFilter(tableSize);
             var table2size = (ulong)(tableSize * (p) * (1.22 + 0.08));
             List<IHashFunctionScheme> schemes = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, tableSize, 0)).ToList();
             List<IHashFunctionScheme> schemes2 = hashFunctionTypes.Select(x => HashFunctionProvider.Get(x, table2size, 0)).ToList();
@@ -401,6 +404,10 @@ public class Program
             var encoder = encoderFactory.Create();
 
             encoder.Encode(hashsetData.ToArray(), hashsetData.Count());
+            foreach (var item in hashsetData)
+            {
+                AddToFilter(item);
+            }
 
             HPWDecoderFactory<XORTable> table = new HPWDecoderFactory<XORTable>(schemes.Select(x => x.Create()));
             var decoder = table.Create(encoder.GetTable());
