@@ -480,6 +480,9 @@ public class Program
                 for (int i = 0; i < graph_steps; i++)
                 {
                     massager.Decode();
+                    var pure = massager.HPWDecoder.GetPure();
+                    HashSet<ulong> decoded = new();
+                    massager.HPWDecoder.OuterDecode(pure, new HashSet<ulong>(), decoded);
                     if (massager.DecodingState == DecodingState.Success)
                     {
                         break;
@@ -487,12 +490,14 @@ public class Program
                     if (nearlyperfectpredictor)
                     {
                         var predicted = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
-                            (x) => (IsInFilter(x << 2 | 0b11)), 31, decoder.GetDecodedValues().Select(x => x >>> 2).ToArray());
+                            (x) => (IsInFilter(x << 2 | 0b11)), 31, decoded.Select(x => x >>> 2).ToArray());
+
+                        predicted = predicted.Where(x => massager.HPWDecoder.GetDecodedValues().Contains(x)).ToArray();
+                        Console.WriteLine($"Predicted {predicted.Length} values");
                         encoder.Encode(predicted, predicted.Count());
                         decoder.GetDecodedValues().UnionWith(predicted);
                     }
-                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
-
+                    //GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
 
                 }
 
