@@ -285,6 +285,19 @@ public class Program
             if (filter[0].StartsWith("bloomfilter"))
             {
                 nearlyperfectpredictor = true;
+                try
+                {
+                    length = (ulong)Math.Pow(2, Math.Ceiling(Math.Log2(length)));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error in Bloom filter creation: {e.Message}");
+                    throw;
+                }
+                if (graph_des.Length < 5)
+                {
+                    throw new ArgumentException("Bloom filter requires 5 parameters: bloomfilter-hash_length-bloom_error-bloom_number_hashfunc-p");
+                }
                 hash_length = int.Parse(graph_des[1]);
                 bloom_error = double.Parse(graph_des[2]);
                 ulong bloom_size = (ulong)Math.Log2(1 / bloom_error) * length;
