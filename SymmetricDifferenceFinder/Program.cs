@@ -355,10 +355,10 @@ public class Program
             if (filter[0].StartsWith("hashfilter"))
             {
                 nearlyperfectpredictor = true;
-                hash_length = 1 << int.Parse(filter[1]);
+                ulong hash_length_1 = 1UL << int.Parse(filter[1]);
                 strong_predictor_steps = int.Parse(filter[2]);
                 var hf = new TabulationFamily();
-                var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
+                var hashFunction = hf.GetScheme((ulong)hash_length_1, 0).Create().Compile();
 
                 var hashes = new HashSet<ulong>();
 
