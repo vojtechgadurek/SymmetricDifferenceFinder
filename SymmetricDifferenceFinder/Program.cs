@@ -483,88 +483,72 @@ public class Program
             foreach (var item in dataselected)
             {
                 RemoveFromFilter(item);
-            }
-
-            //Do it again
-
-            dataselected = decoder.GetDecodedValues()
-                .Where(SelectWithProbability)
-                .Select(x => x >>> 2)
-                .ToArray();
-            dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected)
-                .Select(x => (x << 2) | 0b11)
-                .ToArray();
-
-            Console.WriteLine("Recovered size 2 " + dataselected.Length);
-
-            encoder.Encode(dataselected, dataselected.Length);
-            decoder.GetDecodedValues().SymmetricExceptWith(dataselected);
-            massager.Decode();
 
 
-            if (nearlyperfectpredictor & false)
-            {
-                for (int i = 0; i < 10; i++)
+
+                if (nearlyperfectpredictor & false)
                 {
-                    var data_recovered = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
-                            (x) => IsInFilter(x << 2 | 0b11), 31, decoder.GetDecodedValues().Select(x => x >>> 2).ToArray()).Select(x => (x << 2) | 0b11).ToArray();
-                    encoder.Encode(data_recovered, data_recovered.Length);
-                    decoder.GetDecodedValues().SymmetricExceptWith(data_recovered);
-                }
-            }
-
-
-            if (graph_recovery)
-            {
-                massager.NStepsRecovery = decoderSteps;
-                massager.NStepsDecoder = 100;
-                for (int i = 0; i < graph_steps; i++)
-                {
-                    massager.Decode();
-                    if (massager.DecodingState == DecodingState.Success)
+                    for (int i = 0; i < 10; i++)
                     {
-                        break;
+                        var data_recovered = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor(
+                                (x) => IsInFilter(x << 2 | 0b11), 31, decoder.GetDecodedValues().Select(x => x >>> 2).ToArray()).Select(x => (x << 2) | 0b11).ToArray();
+                        encoder.Encode(data_recovered, data_recovered.Length);
+                        decoder.GetDecodedValues().SymmetricExceptWith(data_recovered);
                     }
-                    GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
-
-
                 }
 
-                massager.NStepsRecovery = decoderSteps;
-                massager.Decode();
+
+                if (graph_recovery)
+                {
+                    massager.NStepsRecovery = decoderSteps;
+                    massager.NStepsDecoder = 100;
+                    for (int i = 0; i < graph_steps; i++)
+                    {
+                        massager.Decode();
+                        if (massager.DecodingState == DecodingState.Success)
+                        {
+                            break;
+                        }
+                        GrapRecovery(massager.HPWDecoder, encoder, 31, max_distance, min_distance, IsInFilter);
+
+
+                    }
+
+                    massager.NStepsRecovery = decoderSteps;
+                    massager.Decode();
+                }
+                stopwatch.Stop();
+                var ans = new HashSet<ulong>(massager.GetDecodedValues());
+                ans.SymmetricExceptWith(hashsetData);
+                Console.WriteLine(ans.Count());
+                return new TestResult((int)tableSize, hashsetData.Count(), ans.Count(), stopwatch.ElapsedMilliseconds);
             }
-            stopwatch.Stop();
-            var ans = new HashSet<ulong>(massager.GetDecodedValues());
-            ans.SymmetricExceptWith(hashsetData);
-            Console.WriteLine(ans.Count());
-            return new TestResult((int)tableSize, hashsetData.Count(), ans.Count(), stopwatch.ElapsedMilliseconds);
+
+            int tableSize = starttablesize;
+
+
+
+            var allresults = new List<TestResult[]>();
+
+            while (tableSize < endtabelesize)
+            {
+                Console.WriteLine($"table size {tableSize}");
+
+                var results = new TestResult[nTests];
+
+                var op = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+                Parallel.ForEach(Enumerable.Range(0, nTests), op, (i) => { results[i] = DoOneTest((ulong)tableSize); });
+
+                var average_decoder = results.Average(x => x.IncorrectlyRecovered);
+                Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}, {average_decoder}");
+                allresults.Add(results);
+                tableSize += step;
+            }
+
+            File.WriteAllText(
+                fileToStoreResults, JsonSerializer.Serialize(allresults));
+
         }
-
-        int tableSize = starttablesize;
-
-
-
-        var allresults = new List<TestResult[]>();
-
-        while (tableSize < endtabelesize)
-        {
-            Console.WriteLine($"table size {tableSize}");
-
-            var results = new TestResult[nTests];
-
-            var op = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
-            Parallel.ForEach(Enumerable.Range(0, nTests), op, (i) => { results[i] = DoOneTest((ulong)tableSize); });
-
-            var average_decoder = results.Average(x => x.IncorrectlyRecovered);
-            Console.WriteLine($"table size finished {tableSize}; mul {tableSize / (double)hashsetData.Count()}, {average_decoder}");
-            allresults.Add(results);
-            tableSize += step;
-        }
-
-        File.WriteAllText(
-            fileToStoreResults, JsonSerializer.Serialize(allresults));
-
-    }
 
     public static void MultiplierSearch(Span<string> args)
     {
