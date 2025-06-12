@@ -328,7 +328,7 @@ public class Program
                     Enumerable.Range(0, bloom_number_hashfunc)
                         .Select(x => hf.GetScheme((ulong)bloom_size, 0).Create().Compile())
                         .ToArray(),
-                    new SetMembership.BasicTable((ulong)bloom_size, (ulong)hash_length, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
+                    new SetMembership.BasicTable((ulong)bloom_size, (ulong)hash_length, hf.GetScheme((ulong)1UL << hash_length, 0).Create().Compile()));
 
                 AddToFilter = (ulong item) =>
                 {
