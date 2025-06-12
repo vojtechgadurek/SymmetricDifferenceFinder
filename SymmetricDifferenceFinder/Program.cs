@@ -480,7 +480,7 @@ public class Program
 
                 dataselected = dataselected.Where(x => !decoder.GetDecodedValues().Contains(x)).ToArray();
                 encoder.Encode(dataselected, dataselected.Length);
-                decoder.GetDecodedValues().Union(dataselected);
+                decoder.GetDecodedValues().UnionWith(dataselected);
                 massager.Decode();
                 foreach (var item in dataselected)
                 {
