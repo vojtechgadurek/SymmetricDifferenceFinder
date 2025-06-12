@@ -273,6 +273,30 @@ public class Program
         var filter = args[argscount++].Split("-");
         double p = double.Parse(args[argscount++].Substring(2));
 
+        if (datasource.StartsWith(filecall))
+        {
+            data = LoadKmersFromFile(datasource.Substring(filecall.Length));
+            hashsetData = new HashSet<ulong>(data);
+            hashsetData.Remove(0ul);
+            data = hashsetData.ToArray();
+            if (data.Contains(0ul)) throw new ArgumentException("Data contains 0");
+            Console.WriteLine(hashsetData.Count);
+        }
+        else if (datasource.StartsWith(generatedcall))
+        {
+            var argsfile = datasource.Substring(generatedcall.Length).Split('-');
+            int nStrings = int.Parse(argsfile[0]);
+            int stringLength = int.Parse(argsfile[1]);
+
+            hashsetData = StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(nStrings * stringLength, stringLength);
+            data = hashsetData.ToArray();
+            Console.WriteLine(data.Length);
+        }
+        else
+        {
+            throw new ArgumentException("Unknown data source");
+        }
+
 
         (Action<ulong> add, Func<ulong, bool> testMembership) CreateFilter(ulong length)
         {
@@ -297,7 +321,7 @@ public class Program
                 }
                 hash_length = int.Parse(filter[1]);
                 bloom_error = double.Parse(filter[2]);
-                ulong bloom_size = (ulong)(1 / bloom_error) * length;
+                ulong bloom_size = (ulong)(1 / bloom_error) * (ulong)data.Length;
                 bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(1 / bloom_error));
 
                 var hf = new TabulationFamily();
@@ -356,29 +380,7 @@ public class Program
 
 
 
-        if (datasource.StartsWith(filecall))
-        {
-            data = LoadKmersFromFile(datasource.Substring(filecall.Length));
-            hashsetData = new HashSet<ulong>(data);
-            hashsetData.Remove(0ul);
-            data = hashsetData.ToArray();
-            if (data.Contains(0ul)) throw new ArgumentException("Data contains 0");
-            Console.WriteLine(hashsetData.Count);
-        }
-        else if (datasource.StartsWith(generatedcall))
-        {
-            var argsfile = datasource.Substring(generatedcall.Length).Split('-');
-            int nStrings = int.Parse(argsfile[0]);
-            int stringLength = int.Parse(argsfile[1]);
 
-            hashsetData = StringDataFactory<KMerStringFactory, CanonicalOrder>.GetRandomStringData(nStrings * stringLength, stringLength);
-            data = hashsetData.ToArray();
-            Console.WriteLine(data.Length);
-        }
-        else
-        {
-            throw new ArgumentException("Unknown data source");
-        }
 
 
         starttablesize = (int)(starttablesizecof * data.Length);
