@@ -266,7 +266,7 @@ public class Program
         }
 
         int hash_length = 0;
-        double bloom_error = 0.01;
+        int bloom_size = 0;
         int bloom_number_hashfunc = 0;
 
 
@@ -320,10 +320,8 @@ public class Program
                     throw new ArgumentException("Bloom filter requires 4 parameters: bloomfilter-hash_length-bloom_error-bloom_number_hashfunc-p");
                 }
                 hash_length = int.Parse(filter[1]);
-                bloom_error = double.Parse(filter[2]);
-                ulong bloom_size = (ulong)(1 / bloom_error) * (ulong)data.Length;
-                bloom_number_hashfunc = (int)(double.Parse(filter[3]) * Math.Log2(1 / bloom_error));
-
+                bloom_size = int.Parse(filter[2]) * data.Length;
+                bloom_number_hashfunc = int.Parse(filter[3]);
                 var hf = new TabulationFamily();
                 var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
                     (ulong)bloom_size,
