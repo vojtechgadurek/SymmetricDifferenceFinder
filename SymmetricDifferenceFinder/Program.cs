@@ -298,7 +298,7 @@ public class Program
         }
 
 
-        (Action<ulong> add, Func<ulong, bool> testMembership) CreateFilter(ulong length)
+        (Action<ulong> add, Func<ulong, bool> testMembership, Action<ulong> Remove) CreateFilter(ulong length)
         {
 
             Action<ulong> AddToFilter = (ulong item) =>
@@ -308,6 +308,10 @@ public class Program
             Func<ulong, bool> IsInFilter = (ulong item) =>
             {
                 return true;
+            };
+            Action<ulong> RemoveFromFilter = (ulong item) =>
+            {
+                //Do nothing
             };
 
             if (filter[0].StartsWith("bloomfilter"))
@@ -337,6 +341,10 @@ public class Program
                 IsInFilter = (ulong item) =>
                 {
                     return bloomfilter.Contains(item);
+                };
+                RemoveFromFilter = (ulong item) =>
+                {
+                    bloomfilter.Remove(item);
                 };
             }
 
@@ -372,7 +380,7 @@ public class Program
                     return hashes.Contains(hash);
                 };
             }
-            return (AddToFilter, IsInFilter);
+            return (AddToFilter, IsInFilter, RemoveFromFilter);
         }
 
 
@@ -394,7 +402,7 @@ public class Program
 
         TestResult DoOneTest(ulong tableSize)
         {
-            var (AddToFilter, IsInFilter) = CreateFilter(tableSize);
+            var (AddToFilter, IsInFilter, RemoveFromFilter) = CreateFilter(tableSize);
             var probhashfunc = new TabulationFamily().GetScheme((ulong)(1 / p), 0).Create().Compile();
 
 
@@ -472,6 +480,11 @@ public class Program
             decoder.GetDecodedValues().UnionWith(dataselected);
             massager.Decode();
 
+            foreach (var item in dataselected)
+            {
+                RemoveFromFilter(item);
+            }
+
             if (nearlyperfectpredictor & false)
             {
                 for (int i = 0; i < 10; i++)
@@ -486,7 +499,6 @@ public class Program
 
             if (graph_recovery)
             {
-
                 massager.NStepsRecovery = decoderSteps;
                 massager.NStepsDecoder = 100;
                 for (int i = 0; i < graph_steps; i++)
