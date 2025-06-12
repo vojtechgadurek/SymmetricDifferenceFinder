@@ -469,22 +469,33 @@ public class Program
             var dataselected = hashsetData.Where(SelectWithProbability).ToArray();
             Console.WriteLine("Seed size " + dataselected.Length);
 
-            dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected.Select(x => x >>> 2).ToArray())
-                .Select(x => (x << 2) | 0b11)
-                .Union(dataselected)
-                .ToArray();
-
-            Console.WriteLine("Recovered size " + dataselected.Length);
-
-            encoder.Encode(dataselected, dataselected.Length);
-            decoder.GetDecodedValues().SymmetricExceptWith(dataselected);
-            massager.Decode();
-
-            foreach (var item in dataselected)
+            void Pump()
             {
-                RemoveFromFilter(item);
+                dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected.Select(x => x >>> 2).ToArray())
+                    .Select(x => (x << 2) | 0b11)
+                    .Union(dataselected)
+                    .ToArray();
+
+                Console.WriteLine("Recovered size " + dataselected.Length);
+
+                encoder.Encode(dataselected, dataselected.Length);
+                decoder.GetDecodedValues().SymmetricExceptWith(dataselected);
+                massager.Decode();
+                foreach (var item in dataselected)
+                {
+                    RemoveFromFilter(item);
+                }
+
+                dataselected = massager.GetDecodedValues().ToArray();
             }
 
+            for (int i = 0; i < 10; i++)
+            {
+                Pump();
+                var x = data.ToHashSet();
+                x.SymmetricExceptWith(massager.GetDecodedValues());
+                Console.WriteLine($"Iteration {i} - {x.Count} items not in decoded set");
+            }
 
             if (nearlyperfectpredictor & false)
             {
