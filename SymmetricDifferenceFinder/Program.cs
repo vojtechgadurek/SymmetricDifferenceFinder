@@ -478,8 +478,9 @@ public class Program
 
                 Console.WriteLine("Recovered size " + dataselected.Length);
 
+                dataselected = dataselected.Except(decoder.GetDecodedValues()).ToArray();
                 encoder.Encode(dataselected, dataselected.Length);
-                decoder.GetDecodedValues().SymmetricExceptWith(dataselected);
+                decoder.GetDecodedValues().Union(dataselected);
                 massager.Decode();
                 foreach (var item in dataselected)
                 {
