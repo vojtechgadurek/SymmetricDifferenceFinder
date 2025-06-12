@@ -268,6 +268,7 @@ public class Program
         int hash_length = 0;
         int bloom_size = 0;
         int bloom_number_hashfunc = 0;
+        int strong_predictor_steps = 0;
 
 
         var filter = args[argscount++].Split("-");
@@ -326,6 +327,7 @@ public class Program
                 hash_length = int.Parse(filter[1]);
                 bloom_size = int.Parse(filter[2]) * data.Length;
                 bloom_number_hashfunc = int.Parse(filter[3]);
+                strong_predictor_steps = int.Parse(filter[4]);
                 var hf = new TabulationFamily();
                 var bloomfilter = new SetMembership.BloomFilter<ulong, SetMembership.BasicTable>(
                     (ulong)bloom_size,
@@ -490,7 +492,7 @@ public class Program
                 dataselected = massager.GetDecodedValues().ToArray();
             }
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < strong_predictor_steps; i++)
             {
                 Pump();
                 var x = data.ToHashSet();
