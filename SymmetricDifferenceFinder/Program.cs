@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using Iced.Intel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using RedaFasta;
@@ -28,18 +28,22 @@ public static class SetMembership
     {
         ulong[] _table;
         Func<ulong, ulong> _hashFunction;
-        public BasicTable(ulong size, Func<ulong, ulong> hashFunction)
+        int _length;
+        public BasicTable(ulong size, ulong lenght, Func<ulong, ulong> hashFunction)
         {
             _table = new ulong[size];
             _hashFunction = hashFunction;
+            _length = (int)lenght;
         }
         public void Add(ulong index, ulong item)
         {
             _table[index] += _hashFunction(item);
+            _table[index] = _table[index] & ((1UL << _length) - 1); // Ensure it fits in ulong
         }
         public void Remove(ulong index, ulong item)
         {
-            _table[index] -= _hashFunction(item);
+            _table[index] -= _hashFunction(item) & ((1UL << _length) - 1); // Ensure it fits in ulong
+
         }
 
         public bool Get(ulong index)
@@ -302,7 +306,7 @@ public class Program
                     Enumerable.Range(0, bloom_number_hashfunc)
                         .Select(x => hf.GetScheme((ulong)bloom_size, 0).Create().Compile())
                         .ToArray(),
-                    new SetMembership.BasicTable((ulong)bloom_size, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
+                    new SetMembership.BasicTable((ulong)bloom_size, (ulong)hash_length, hf.GetScheme((ulong)hash_length, 0).Create().Compile()));
 
                 AddToFilter = (ulong item) =>
                 {
