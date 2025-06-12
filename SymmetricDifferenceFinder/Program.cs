@@ -485,6 +485,23 @@ public class Program
                 RemoveFromFilter(item);
             }
 
+            //Do it again
+
+            dataselected = decoder.GetDecodedValues()
+                .Where(SelectWithProbability)
+                .Select(x => x >>> 2)
+                .ToArray();
+            dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected)
+                .Select(x => (x << 2) | 0b11)
+                .ToArray();
+
+            Console.WriteLine("Recovered size 2 " + dataselected.Length);
+
+            encoder.Encode(dataselected, dataselected.Length);
+            decoder.GetDecodedValues().UnionWith(dataselected);
+            massager.Decode();
+
+
             if (nearlyperfectpredictor & false)
             {
                 for (int i = 0; i < 10; i++)
