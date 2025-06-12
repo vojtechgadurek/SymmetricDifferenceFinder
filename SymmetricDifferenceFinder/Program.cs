@@ -356,6 +356,7 @@ public class Program
             {
                 nearlyperfectpredictor = true;
                 hash_length = int.Parse(filter[1]);
+                strong_predictor_steps = int.Parse(filter[2]);
                 var hf = new TabulationFamily();
                 var hashFunction = hf.GetScheme((ulong)hash_length, 0).Create().Compile();
 
@@ -380,6 +381,9 @@ public class Program
                 {
                     var hash = hashFunction(item);
                     return hashes.Contains(hash);
+                };
+                RemoveFromFilter = (ulong item) =>
+                {
                 };
             }
             return (AddToFilter, IsInFilter, RemoveFromFilter);
