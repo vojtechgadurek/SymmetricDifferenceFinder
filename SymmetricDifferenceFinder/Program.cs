@@ -107,6 +107,138 @@ public static class SetMembership
     }
 }
 
+//Seed 
+// AAAAAAAAAAA
+// ASAAAAAAAAA
+// 
+
+public static class HelperFuncs
+{
+
+    static (List<ulong>, int badtips)? GoInBothDirections(
+        ulong first,
+        ulong second,
+        int position,
+        int steps,
+        int maxbadtips,
+        Func<ulong, bool> IsInSet,
+        int kmerLength)
+    {
+        var bestleft = DoublePath(
+                first, second, kmerLength - position - 1, 0, maxbadtips, IsInSet, (x) => KMerUtils.KMer.Utils.GetLeftNeighbors(x, kmerLength)
+                );
+        if (bestleft is null)
+        {
+            return null;
+        }
+
+        var bestright = DoublePath(
+            first, second, position, 0, maxbadtips, IsInSet, (x) => KMerUtils.KMer.Utils.GetRightNeighbors(x, kmerLength)
+            );
+        if (bestright is null)
+        {
+            return null;
+        }
+
+        return (new List<ulong>(bestright.Value.kmers.Concat(bestleft.Value.kmers)),
+            bestleft.Value.badtips + bestright.Value.badtips);
+    }
+
+    static List<ulong>? ExploreSeed(ulong seed, int maxbadtips, int kmerlenght, Func<ulong, bool> IsInSet)
+    {
+
+        (List<ulong> kmers, int badtips)? best = null;
+        for (int pos = 0; pos < kmerlenght; pos++)
+        {
+            for (int val = 0; val < 4; val++)
+            {
+                ulong first = seed;
+                ulong maskval = 3UL << (pos * 2);
+                ulong second = first | maskval;
+
+                var res = GoInBothDirections(
+                    first, second, pos, kmerlenght, maxbadtips, IsInSet, kmerlenght
+                    );
+                if (res is null) continue;
+                if (best is null)
+                {
+                    best = res;
+                }
+                else if (best.Value.badtips > res.Value.badtips)
+                {
+                    best = res;
+                }
+            }
+        }
+        if (best is null) return null;
+        return best.Value.kmers;
+    }
+
+
+    static (List<ulong> kmers, int badtips)? DoublePath(ulong first,
+         ulong second,
+         int steps,
+         int badtips,
+         int maxbadtips,
+         Func<ulong, bool> IsInSet,
+         Func<ulong, ulong[]> GetNext
+         )
+    {
+        (List<ulong> kmers, int badtips)? best = null;
+        if (steps == 0)
+        {
+            //We are at the end of the path
+            return (new List<ulong>() { first, second }, badtips);
+        }
+
+        if (badtips > maxbadtips)
+        {
+            //We are too far from the seed
+            return null;
+        }
+
+        //Move k-mers to right
+        var firstneigh = GetNext(first);
+        var secondneigh = GetNext(second);
+        for (int i = 0; i < firstneigh.Length; i++)
+        {
+            var res = DoublePath(
+                    firstneigh[i],
+                    secondneigh[i],
+                    steps - 1,
+                    badtips
+                    + (IsInSet(firstneigh[i]) ? 1 : 0)
+                    + (IsInSet(secondneigh[i]) ? 1 : 0)
+                    ,
+                    maxbadtips,
+                    IsInSet,
+                    GetNext
+                    );
+
+            if (res is not null)
+            {
+                if (best is null)
+                {
+                    best = res;
+                }
+                else if (best.Value.badtips > res.Value.badtips)
+                {
+                    best = res;
+                }
+            }
+        }
+        if (best is not null)
+        {
+            best.Value.kmers.Add(first);
+            best.Value.kmers.Add(second);
+            return best;
+        }
+        return null;
+    }
+
+
+}
+
 
 public class Program
 {
@@ -351,7 +483,6 @@ public class Program
             }
 
 
-
             if (filter[0].StartsWith("hashfilter"))
             {
                 nearlyperfectpredictor = true;
@@ -477,7 +608,7 @@ public class Program
 
             void Pump()
             {
-                dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(x << 2 | 0b11), 31, dataselected.Select(x => x >>> 2).ToArray())
+                dataselected = KMerUtils.DNAGraph.Recover.RecoverGraphNearlyStrongPredictor((x) => IsInFilter(KMerUtils.KMer.Utils.GetCanonical(x, 31) << 2 | 0b11), 31, dataselected.Select(x => x >>> 2).ToArray())
                     .Select(x => (x << 2) | 0b11)
                     .Union(dataselected)
                     .ToArray();
@@ -487,17 +618,18 @@ public class Program
                 dataselected = dataselected.Where(x => !decoder.GetDecodedValues().Contains(x)).ToArray();
                 encoder.Encode(dataselected, dataselected.Length);
                 decoder.GetDecodedValues().UnionWith(dataselected);
+
                 massager.HPWDecoder.Decode();
                 foreach (var item in dataselected)
                 {
                     RemoveFromFilter(item);
                 }
-
                 dataselected = massager.GetDecodedValues().ToArray();
             }
 
             for (int i = 0; i < strong_predictor_steps; i++)
             {
+
                 Pump();
                 var x = data.ToHashSet();
                 x.SymmetricExceptWith(massager.GetDecodedValues());
